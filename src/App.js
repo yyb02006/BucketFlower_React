@@ -1,25 +1,31 @@
-import logo from './logo.svg';
-import './App.css';
+import Home from './routes/Home';
+import GlobalStyle from './GlobalStyle';
+import Personal from './routes/Personal';
+import { Route, Routes, BrowserRouter } from 'react-router-dom';
+import axios from 'axios';
+import { useEffect } from 'react';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+	const sendRequest = async () => {
+		const response = await axios.get('http://localhost:8080');
+		const responsePer = await axios.get('http://localhost:8080/personal');
+		console.log(response);
+		console.log(responsePer);
+	};
+
+	useEffect(() => {
+		sendRequest();
+	});
+
+	return (
+		<BrowserRouter>
+			<GlobalStyle />
+			<Routes>
+				<Route path='/' element={<Home />} />
+				<Route path='/personal' element={<Personal />} />
+			</Routes>
+		</BrowserRouter>
+	);
 }
 
 export default App;
