@@ -20,7 +20,7 @@ const GlobalNav = styled.div`
 	margin: 0 auto;
 	overflow: hidden;
 	max-width: 1760px;
-	background-color: cornsilk;
+	/* background-color: cornsilk; */
 `;
 
 const Navdiv = styled.div`
@@ -31,11 +31,15 @@ const Navdiv = styled.div`
 `;
 
 const LoginBtn = styled.span`
-	font-family: '6';
-	font-size: 1.25rem;
+	font-weight: 800;
+	font-size: 1rem;
 	margin-left: auto;
 	/* ${(props) => props.move === '/personal' && LoginStyle(-100)}; */
 	animation-timing-function: ease-in-out(0.42, 0, 0.58, 1);
+	& a:visited,
+	& a:link {
+		color: #555555;
+	}
 `;
 
 const Logo = styled.img`
@@ -61,13 +65,11 @@ function Header() {
 					<Logo src={img} alt='' move={location.pathname} />
 				</Link>
 				<LoginBtn move={location.pathname}>
-					<NavLink to='/personal'>
-						{location.pathname === '/personal' ? (
-							<Person src={person} alt='' />
-						) : (
-							'Login'
-						)}
-					</NavLink>
+					{location.pathname === '/personal' ? (
+						<Person src={person} alt='' />
+					) : (
+						<NavLink to='/login'>LOGIN</NavLink>
+					)}
 				</LoginBtn>
 			</Navdiv>
 		</GlobalNav>

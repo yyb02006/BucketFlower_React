@@ -2,6 +2,7 @@ import Header from '../components/Header';
 import Background from '../components/Background';
 import styled, { keyframes, css } from 'styled-components';
 import { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
 
 const MoveBox = keyframes`
 	0%{
@@ -63,8 +64,9 @@ const MainText = styled.div`
 	min-width: 280px;
 	margin-left: 16px;
 	font-size: 3rem;
-	font-family: '6';
-	letter-spacing: -1.5px;
+	font-family: 'S-CoreDream';
+	font-weight: 700;
+	letter-spacing: -0.25rem;
 	& > span {
 		color: #239e8e;
 	}
@@ -91,6 +93,17 @@ const IntroWrapper = styled.div`
 const IntroCard = styled.div``;
 
 function Home() {
+	const sendRequest = async () => {
+		const response = await axios.get('http://localhost:8080');
+		const responsePer = await axios.get('http://localhost:8080/personal');
+		console.log(response);
+		console.log(responsePer);
+	};
+
+	useEffect(() => {
+		sendRequest();
+	}, []);
+
 	const [offsetY, setOffsetY] = useState('');
 	const [cardMove, setCardMove] = useState(false);
 	const [width, setWidth] = useState('');
@@ -119,7 +132,7 @@ function Home() {
 	}, []);
 
 	useEffect(() => {
-		if (offsetY >= 600) {
+		if (offsetY >= 550) {
 			setCardMove((p) => (p = true));
 		}
 	}, [offsetY]);
