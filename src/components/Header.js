@@ -1,8 +1,7 @@
 import styled, { css, keyframes } from 'styled-components';
 import img from '../assets/logo.svg';
-import person from '../assets/person.svg';
+import person from '../assets/personicon_48.svg';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { useState } from 'react';
 
 const MoveLogin = (distance) => keyframes`
 	0%{

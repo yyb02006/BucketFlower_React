@@ -132,7 +132,7 @@ function Home() {
 	}, []);
 
 	useEffect(() => {
-		if (offsetY >= 550) {
+		if (offsetY >= 500) {
 			setCardMove((p) => (p = true));
 		}
 	}, [offsetY]);

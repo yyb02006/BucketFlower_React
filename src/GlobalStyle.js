@@ -46,7 +46,7 @@ const GlobalStyle = createGlobalStyle`
 
 body{
   font-family: 'S-CoreDream';
-  font-weight: 700;
+  font-weight: 600;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0 auto;
@@ -67,8 +67,15 @@ a{
 a:visited, a:link {color: #404040}
 
 button{
+  font-family: 'S-CoreDream';
+  font-weight: 500;
+	font-size: 1.5rem;
+	padding: 16px 0;
+	border: none;
+	background-color: #32c7b2;
+	border-radius: 20px;
+	color: #fafafa;
   cursor: pointer;
-  color: #404040;
 }
 
 label{
@@ -78,12 +85,18 @@ label{
 input{
   font-family: 'S-CoreDream';
   font-weight: 500;
+  font-size: 0.825rem;
+	width: 100%;
+	border: none;
+	border-radius: 16px;
   color: #404040;
+	background-color: #e9e9e9;
 }
 
 input::placeholder{
   font-family: 'S-CoreDream';
-  font-weight: 500;
+  font-size: 0.825rem;
+	font-weight: 500;
   color: #a0a0a0;
 }
 
@@ -95,6 +108,10 @@ input[type='password'] {
 
 input:focus{
   outline: 2px solid #32C7B2;
+}
+
+form{
+  padding: 32px 36px 28px 36px;
 }
 
 `;
