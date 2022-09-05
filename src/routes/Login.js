@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import styled, { keyframes, css } from 'styled-components';
 import RegisterBackground from '../components/RegisterBackground';
+axios.defaults.withCredentials = true;
 
 const Err = keyframes`
 	0%{
@@ -107,7 +108,7 @@ function Login() {
 				id: userId,
 				password: userPassword,
 			});
-			console.log('im working');
+			console.log(req);
 			setIsUser((p) => (p = req.data.isUser));
 		} catch (err) {
 			console.log(err);

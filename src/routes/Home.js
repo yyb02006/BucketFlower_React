@@ -93,22 +93,10 @@ const IntroWrapper = styled.div`
 const IntroCard = styled.div``;
 
 function Home() {
-	const sendRequest = async () => {
-		const response = await axios.get('http://localhost:8080');
-		const responsePer = await axios.get('http://localhost:8080/personal');
-		console.log(response);
-		console.log(responsePer);
-	};
-
-	useEffect(() => {
-		sendRequest();
-	}, []);
-
 	const [offsetY, setOffsetY] = useState('');
 	const [cardMove, setCardMove] = useState(false);
 	const [width, setWidth] = useState('');
 	const [innerWidth, setInnerWidth] = useState('');
-
 	const VideoRef = useRef();
 
 	const handleScroll = () => {
@@ -136,7 +124,7 @@ function Home() {
 			setCardMove((p) => (p = true));
 		}
 	}, [offsetY]);
-	console.log(cardMove);
+	// console.log(cardMove);
 	return (
 		<div>
 			<Background />
