@@ -10,6 +10,7 @@ const BackgroundGrad = styled.div`
 `;
 
 const BackgroundImg = styled.img`
+	width: 100%;
 	object-fit: cover;
 	filter: drop-shadow(0px 32px 32px rgba(0, 0, 0, 0.35));
 `;

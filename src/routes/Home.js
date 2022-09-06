@@ -92,7 +92,7 @@ const IntroWrapper = styled.div`
 
 const IntroCard = styled.div``;
 
-function Home() {
+function Home({ isLogin }) {
 	const [offsetY, setOffsetY] = useState('');
 	const [cardMove, setCardMove] = useState(false);
 	const [width, setWidth] = useState('');
@@ -128,7 +128,7 @@ function Home() {
 	return (
 		<div>
 			<Background />
-			<Header />
+			<Header isLogin={isLogin} />
 			<Main>
 				<MainVideo ref={VideoRef} width={width}></MainVideo>
 				<MainText>

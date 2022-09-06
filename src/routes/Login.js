@@ -116,7 +116,7 @@ function Login() {
 	};
 	useEffect(() => {
 		if (isUser === 1) {
-			move('/');
+			move('/userhome');
 		}
 	}, [isUser]);
 	console.log(isUser);

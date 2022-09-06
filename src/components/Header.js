@@ -1,9 +1,9 @@
 import styled, { css, keyframes } from 'styled-components';
 import img from '../assets/logo.svg';
 import person from '../assets/personicon_48.svg';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, useLayoutEffect, useMemo } from 'react';
 import axiosInstance from '../utils/axiosConfig';
 axios.defaults.withCredentials = true;
 
@@ -33,7 +33,6 @@ const MoveMenu = () => keyframes`
 const GlobalNav = styled.div`
 	margin: 0 auto;
 	overflow: hidden;
-	max-width: 1760px;
 	/* background-color: cornsilk; */
 `;
 
@@ -41,7 +40,7 @@ const Navdiv = styled.div`
 	display: flex;
 	align-items: center;
 	height: 120px;
-	padding: 0 40px;
+	padding: 0 120px;
 `;
 
 const LoginBtn = styled.span`
@@ -66,11 +65,15 @@ const Person = styled.img`
 `;
 
 const DropMenu = styled.div`
-	width: 100px;
-	height: 100px;
+	width: 298px;
+	height: 608px;
+	padding: 16px;
+	margin-top: 16px;
+	border-radius: 16px;
+	filter: drop-shadow(4px 8px 10px rgba(0, 0, 0, 0.25));
 	position: absolute;
-	right: 100px;
-	background-color: crimson;
+	right: 120px;
+	background-color: #fafafa;
 	animation: ${MoveMenu} 1s;
 	animation-timing-function: ease-in-out(0.42, 0, 0.58, 1);
 `;
@@ -78,7 +81,7 @@ const DropMenu = styled.div`
 const GreetBox = styled.div`
 	height: 50px;
 	margin-left: auto;
-	margin-right: 36px;
+	margin-right: 24px;
 `;
 
 const Greet = styled.div`
@@ -94,24 +97,24 @@ const MyFlowerLink = styled.div`
 // 	color: orange;
 // `;
 
-function Header() {
-	const [isUser, setIsUser] = useState('');
+function Header({ isLogin }) {
+	const [isUser, setIsUser] = useState(isLogin);
 	const [menuDown, setMenuDown] = useState(true);
 	const location = useLocation();
-
+	const move = useNavigate();
 	const auth = async () => {
 		try {
 			const req = await axiosInstance.get('http://localhost:8080/authtoken');
-			console.log(req);
+			// console.log(req.data.id);
 			setIsUser((p) => (p = req.data.id));
 		} catch (error) {
 			console.log('auth' + error);
 		}
 	};
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		auth();
-	}, []);
+	}, [isUser]);
 
 	const mouseEnter = () => {
 		setMenuDown((p) => (p = true));
@@ -123,8 +126,9 @@ function Header() {
 	const logout = async () => {
 		try {
 			const req = await axios.get('http://localhost:8080/logout');
-			console.log(req);
+			console.log('here' + req.data);
 			setIsUser((p) => (p = req.data));
+			move('/');
 		} catch (error) {
 			console.log(error);
 		}
@@ -132,7 +136,7 @@ function Header() {
 	return (
 		<GlobalNav>
 			<Navdiv>
-				<Link to='/'>
+				<Link to={isUser ? '/userhome' : '/'}>
 					<Logo src={img} alt='' move={location.pathname} />
 				</Link>
 				{isUser ? (
@@ -147,7 +151,7 @@ function Header() {
 					onMouseLeave={mouseLeave}
 					marginSet={isUser}
 				>
-					{isUser ? (
+					{location.pathname === '/userhome' ? (
 						<div>
 							<NavLink to='/personal'>
 								<Person src={person} alt='' />
