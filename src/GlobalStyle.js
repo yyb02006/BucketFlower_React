@@ -106,7 +106,7 @@ input[type='password'] {
   color: #32C7B2;
 }
 
-input:focus{
+input:focus, textarea:focus{
   outline: 2px solid #32C7B2;
 }
 

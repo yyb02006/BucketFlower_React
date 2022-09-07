@@ -1,8 +1,10 @@
 import Header from '../components/Header';
 import Background from '../components/Background';
 import styled, { keyframes, css } from 'styled-components';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../utils/axiosConfig';
 
 const MoveBox = keyframes`
 	0%{
@@ -92,12 +94,24 @@ const IntroWrapper = styled.div`
 
 const IntroCard = styled.div``;
 
-function Home({ isLogin }) {
+function Home() {
 	const [offsetY, setOffsetY] = useState('');
 	const [cardMove, setCardMove] = useState(false);
 	const [width, setWidth] = useState('');
 	const [innerWidth, setInnerWidth] = useState('');
+	const [isLogin, setIsLogin] = useState('');
 	const VideoRef = useRef();
+	const move = useNavigate();
+
+	const test = async () => {
+		try {
+			const req = await axiosInstance.get('http://localhost:8080/authtoken');
+			setIsLogin((p) => (p = req.data.id));
+			// console.log('First' + req.data.id);
+		} catch (error) {
+			console.log('auth' + error);
+		}
+	};
 
 	const handleScroll = () => {
 		setOffsetY((p) => (p = window.scrollY));
@@ -120,15 +134,22 @@ function Home({ isLogin }) {
 	}, []);
 
 	useEffect(() => {
-		if (offsetY >= 500) {
+		if (offsetY >= 400) {
 			setCardMove((p) => (p = true));
 		}
 	}, [offsetY]);
+
+	useLayoutEffect(() => {
+		test();
+		if (isLogin) {
+			move('userhome');
+		}
+	});
 	// console.log(cardMove);
 	return (
 		<div>
 			<Background />
-			<Header isLogin={isLogin} />
+			<Header />
 			<Main>
 				<MainVideo ref={VideoRef} width={width}></MainVideo>
 				<MainText>

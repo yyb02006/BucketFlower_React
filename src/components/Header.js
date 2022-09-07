@@ -52,7 +52,12 @@ const LoginBtn = styled.span`
 	& a:link {
 		color: #555555;
 	}
-	${(props) => (props.marginSet ? null : 'margin-left: auto')}
+	${(props) =>
+		props.marginSet
+			? props.location === '/'
+				? 'margin-left: auto'
+				: null
+			: 'margin-left: auto'}
 `;
 
 const Logo = styled.img`
@@ -97,8 +102,8 @@ const MyFlowerLink = styled.div`
 // 	color: orange;
 // `;
 
-function Header({ isLogin }) {
-	const [isUser, setIsUser] = useState(isLogin);
+function Header() {
+	const [isUser, setIsUser] = useState('');
 	const [menuDown, setMenuDown] = useState(true);
 	const location = useLocation();
 	const move = useNavigate();
@@ -139,17 +144,20 @@ function Header({ isLogin }) {
 				<Link to={isUser ? '/userhome' : '/'}>
 					<Logo src={img} alt='' move={location.pathname} />
 				</Link>
-				{isUser ? (
-					<GreetBox>
-						<Greet>{isUser}님 반가워요!</Greet>
-						<MyFlowerLink>나의 버킷플라워 보러 가기</MyFlowerLink>
-					</GreetBox>
+				{location.pathname !== '/' ? (
+					isUser ? (
+						<GreetBox>
+							<Greet>{isUser}님 반가워요!</Greet>
+							<MyFlowerLink>나의 버킷플라워 보러 가기</MyFlowerLink>
+						</GreetBox>
+					) : null
 				) : null}
 				<LoginBtn
 					move={location.pathname}
 					onMouseEnter={mouseEnter}
 					onMouseLeave={mouseLeave}
 					marginSet={isUser}
+					location={location.pathname}
 				>
 					{location.pathname === '/userhome' ? (
 						<div>
