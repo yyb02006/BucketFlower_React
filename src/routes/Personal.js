@@ -1,7 +1,7 @@
 import Header from '../components/Header';
 import Background from '../components/Background';
 import styled, { css, keyframes } from 'styled-components';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import logo from '../assets/logo.svg';
 import person96 from '../assets/personicon_96.svg';
 import { Link, NavLink } from 'react-router-dom';
@@ -10,6 +10,8 @@ import cancel from '../assets/cancel_icon.svg';
 import confirm from '../assets/confirm.svg';
 import addIcon from '../assets/add_icon.svg';
 import axios from 'axios';
+import axiosInstance from '../utils/axiosConfig';
+import deleteIcon from '../assets/deleteImg_icon.svg';
 
 const moveMenuBar = keyframes`
 	0%{
@@ -272,6 +274,11 @@ const CreateForm = styled.form`
 		padding: 10px 20px;
 		width: calc(100% - 40px);
 	}
+	& > div:nth-child(1) > span {
+		font-weight: 400;
+		font-size: 0.825rem;
+		color: #ff4500;
+	}
 	& > div:nth-child(2) > textarea {
 		line-height: 1.375rem;
 		width: calc(100% - 40px);
@@ -287,11 +294,12 @@ const CreateForm = styled.form`
 		margin-top: 16px;
 		background-color: #e9e9e9;
 	}
-	& > div:nth-child(3) > input {
-		display: block;
-		width: 100px;
-		height: 100px;
+	& > div:nth-child(3) input {
+		display: none;
+		width: 140px;
+		height: 140px;
 		border-radius: 8px;
+		margin-right: 16px;
 	}
 	& > div:nth-child(4) {
 		margin-top: 36px;
@@ -327,61 +335,180 @@ const CreateSheetsBtn = styled.button`
 	}
 `;
 
+const ImagePreviewWrapper = styled.div`
+	display: flex;
+	flex-wrap: wrap;
+	margin-top: 16px;
+	& > button {
+		display: block;
+		width: 140px;
+		height: 140px;
+		border-radius: 8px;
+		margin-right: 16px;
+	}
+`;
+
+const ImagePreview = styled.div`
+	position: relative;
+	margin-right: 16px;
+	margin-bottom: 12px;
+	& > img {
+		border-radius: 8px;
+		width: 140px;
+		height: 140px;
+		object-fit: cover;
+	}
+`;
+
+const ImgDelButton = styled.button`
+	padding: 0;
+	font-size: 0;
+	position: absolute;
+	right: -4px;
+	top: -4px;
+	filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.35));
+`;
+
 function Personal({ isLogin }) {
+	const [isUser, setIsUser] = useState('');
 	const [selectMenu, setSelectMenu] = useState(0);
 	const [totalList, setTotalList] = useState(0);
 	const [completeList, setcompleteList] = useState(0);
 	const [createList, setCreateList] = useState(false);
 	const [containerWidth, setContainerWidth] = useState(580);
 	const [title, setTitle] = useState('');
+	const [onTitleChange, setOnTitleChange] = useState(false);
 	const [contents, setContents] = useState('');
+	const [images, setImages] = useState([]);
 	const [isOpen, setIsOpen] = useState(false);
+	const [loadedImages, setLoadedImages] = useState([]);
+	const [loadedImagesId, setLoadedImagesId] = useState(0);
+	const [userList, setUserList] = useState();
 	const containerRef = useRef();
+	const selectImage = useRef();
 
+	const auth = async () => {
+		try {
+			const req = await axiosInstance.get('http://localhost:8080/authtoken');
+			// console.log(req.data.id);
+			setIsUser((p) => (p = req.data.id));
+		} catch (error) {
+			console.log('auth' + error);
+		}
+	};
+
+	const selectList = async () => {
+		try {
+			const req = await axios.post('http://localhost:8080/userList', {
+				id: isUser,
+			});
+			setTotalList(req.data.length);
+			console.log(req.data);
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	useLayoutEffect(() => {
+		auth();
+	}, []);
+
+	useLayoutEffect(() => {
+		selectList();
+		console.log(isLogin);
+	}, [isUser, isOpen]);
+
+	useLayoutEffect(() => {}, [isOpen]);
 	//onEvent func 처리
 	const changeMenu = () => {
 		setSelectMenu((p) => (p = 1));
 	};
+
 	const changeMenuReverse = () => {
 		setSelectMenu((p) => (p = 2));
 	};
+
 	const onWrite = () => {
 		setCreateList((p) => (p = true));
 	};
+
 	const exitForm = () => {
 		setCreateList((p) => (p = false));
 	};
+
 	const insertTitle = (e) => {
 		setTitle((p) => (p = e.target.value));
+		setOnTitleChange((p) => (p = true));
 	};
+
 	const insertContents = (e) => {
 		setContents((p) => (p = e.target.value));
 	};
-	const insertImg = async (e) => {
-		const imgData = new FormData();
-		imgData.append('user', 'yyb02006');
-		imgData.append('img', e.target.files[0]);
-		const req = await axios.post(
-			`http://localhost:8080/userThumbnail`,
-			imgData,
-			{ headers: { 'Content-Type': 'multipart/form-data' } }
-		);
-		console.log(e.target.files[0]);
-		console.log(imgData.__proto__);
+
+	const insertImg = (e) => {
+		const img = e.target.files[0];
+		const fileReader = new FileReader();
+		fileReader.readAsDataURL(img);
+		fileReader.onload = () => {
+			const preview = { key: loadedImagesId, image: fileReader.result };
+			const serverImage = { key: loadedImagesId, image: img };
+			setLoadedImagesId((p) => p + 1);
+			setLoadedImages((p) => [...p, preview]);
+			setImages((p) => [...p, serverImage]);
+		};
 	};
+
+	const deleteImg = (index) => {
+		const prvArr = loadedImages.filter((arr) => arr.key !== index);
+		const serverArr = images.filter((arr) => arr.key !== index);
+		setLoadedImages([...prvArr]);
+		setImages([...serverArr]);
+	};
+
 	const listSubmit = async (e) => {
 		e.preventDefault();
-		console.log({ title: title, contents: contents });
+		if (title.length > 0) {
+			console.log({ title: title, contents: contents, images: images });
+			const imgData = new FormData();
+			const imagearr = images.map((image) => image.image);
+			imgData.append('title', title);
+			imgData.append('contents', contents);
+			imgData.append('author', isUser);
+			images.map((image, index) => imgData.append('img', image.image));
+			// imgData.append('img', imagearr);
+			const req = await axios.post(
+				`http://localhost:8080/userThumbnail`,
+				imgData,
+				{ headers: { 'Content-Type': 'multipart/form-data' } }
+			);
+			cancelSheets();
+		} else {
+			return;
+		}
+		// console.log(e.target.files[0]);
+		// console.log(imgData.__proto__);
 	};
-	const closeSheets = () => {
+
+	const cancelSheets = () => {
 		setIsOpen((p) => (p = false));
+		setLoadedImages([]);
+		setImages([]);
+		setLoadedImagesId(0);
 	};
+
 	const openSheets = () => {
 		setIsOpen((p) => (p = true));
 	};
+
 	useEffect(() => {
 		setContainerWidth(containerRef.current.offsetWidth);
 	});
+
+	useEffect(() => {
+		console.log(images);
+		console.log(loadedImages);
+	}, [images]);
+
 	return (
 		<div>
 			<Background />
@@ -397,7 +524,7 @@ function Personal({ isLogin }) {
 					<UserProfile>
 						<UserPicture src={person96} alt=''></UserPicture>
 						<div>
-							<span>{isLogin}</span>님, 환영합니다!
+							<span>{isUser}</span>님, 환영합니다!
 						</div>
 					</UserProfile>
 					<BoardMenu>
@@ -441,7 +568,7 @@ function Personal({ isLogin }) {
 							) : (
 								<TodoListInfo>
 									아직 버킷리스트가 작성되지 않았어요! <br />
-									<span>{isLogin}</span>님만의 버킷리스트를 작성해보세요!
+									<span>{isUser}</span>님만의 버킷리스트를 작성해보세요!
 								</TodoListInfo>
 							)}
 							<SeparateBar />
@@ -475,6 +602,11 @@ function Personal({ isLogin }) {
 										id='title'
 										type='text'
 									/>
+									{onTitleChange ? (
+										title.length < 1 ? (
+											<span>마! 제목은 있어야 한다 아입니까?</span>
+										) : null
+									) : null}
 								</div>
 								<div>
 									<label htmlFor='contents'>
@@ -491,15 +623,34 @@ function Personal({ isLogin }) {
 								</div>
 								<div>
 									<label htmlFor='picture'>기념할 사진이 있으신가요?</label>
-									<input
-										id='picture'
-										type='file'
-										accept='image/*'
-										onChange={insertImg}
-									/>
+									<ImagePreviewWrapper>
+										{loadedImages.map((loadedImage) => (
+											<ImagePreview key={loadedImage.key}>
+												<img src={loadedImage.image} alt='' />
+												<ImgDelButton
+													onClick={() => deleteImg(loadedImage.key)}
+												>
+													<img src={deleteIcon} alt='' />
+												</ImgDelButton>
+											</ImagePreview>
+										))}
+										<input
+											id='picture'
+											type='file'
+											accept='image/*'
+											onChange={insertImg}
+											ref={selectImage}
+										/>
+										<button
+											type='button'
+											onClick={() => selectImage.current.click()}
+										>
+											추가하기
+										</button>
+									</ImagePreviewWrapper>
 								</div>
 								<div>
-									<button type='button' onClick={closeSheets}>
+									<button type='button' onClick={cancelSheets}>
 										취소
 									</button>
 									<button type='submit'>

@@ -119,7 +119,7 @@ function Header() {
 
 	useLayoutEffect(() => {
 		auth();
-	}, [isUser]);
+	}, []);
 
 	const mouseEnter = () => {
 		setMenuDown((p) => (p = true));
