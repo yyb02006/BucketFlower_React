@@ -12,6 +12,9 @@ import addIcon from '../assets/add_icon.svg';
 import axios from 'axios';
 import axiosInstance from '../utils/axiosConfig';
 import deleteIcon from '../assets/deleteImg_icon.svg';
+import profilePictureIcon from '../assets/profilepicture_icon.svg';
+import UserPost from '../components/UserPost';
+import CreatedList from '../components/CreatedList';
 
 const moveMenuBar = keyframes`
 	0%{
@@ -90,7 +93,7 @@ const UserBoard = styled.div`
 
 const UserProfile = styled.div`
 	height: 224px;
-	& > div {
+	& > div:nth-child(2) {
 		max-width: 580px;
 		margin: 0 auto;
 		padding-top: 24px;
@@ -99,15 +102,34 @@ const UserProfile = styled.div`
 		display: flex;
 		justify-content: center;
 	}
-	& > div > span {
+	& > div:nth-child(2) > span {
 		color: #32a797;
+	}
+`;
+
+const UserPictureWrapper = styled.div`
+	position: relative;
+	width: 96px;
+	margin: 0 auto;
+	& > img:nth-child(2) {
+		border-radius: 48px;
+		position: absolute;
+		bottom: 4px;
+		right: 4px;
+		filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.35));
+		cursor: pointer;
+	}
+	& > input {
+		display: none;
 	}
 `;
 
 const UserPicture = styled.img`
 	display: block;
 	width: 96px;
-	margin: 0 auto;
+	height: 96px;
+	border-radius: 48px;
+	object-fit: cover;
 `;
 
 const BoardMenu = styled.div`
@@ -222,7 +244,6 @@ const CreateContainer = styled.div`
 		position: relative;
 		top: 100px;
 		width: calc(1180px - 60px);
-		height: 1000px;
 		border-radius: 24px;
 		background-color: #fafafa;
 		margin: 0 auto;
@@ -251,15 +272,12 @@ const CreateTitle = styled.div`
 	font-size: 1.5rem;
 	font-weight: 500;
 	margin-top: 8px;
+	margin-bottom: 60px;
 	& > div {
 		width: 150px;
 		border-bottom: 4px solid #32a797;
 		margin-bottom: 8px;
 	}
-`;
-
-const CreatedList = styled.div`
-	margin-top: 60px;
 `;
 
 const CreateForm = styled.form`
@@ -369,6 +387,10 @@ const ImgDelButton = styled.button`
 	filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.35));
 `;
 
+const CreatedListWrapper = styled.div`
+	margin-top: 20px;
+`;
+
 function Personal({ isLogin }) {
 	const [isUser, setIsUser] = useState('');
 	const [selectMenu, setSelectMenu] = useState(0);
@@ -383,9 +405,12 @@ function Personal({ isLogin }) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [loadedImages, setLoadedImages] = useState([]);
 	const [loadedImagesId, setLoadedImagesId] = useState(0);
-	const [userList, setUserList] = useState();
+	const [userList, setUserList] = useState([]);
+	const [isChange, setIsChange] = useState(false);
+	const [userImageName, setUserImageName] = useState('');
 	const containerRef = useRef();
 	const selectImage = useRef();
+	const profileImage = useRef();
 
 	const auth = async () => {
 		try {
@@ -402,12 +427,31 @@ function Personal({ isLogin }) {
 			const req = await axios.post('http://localhost:8080/userList', {
 				id: isUser,
 			});
+			const reqq = await axios.post('http://localhost:8080/userprofile', {
+				userid: isUser,
+			});
+			if (reqq.data[0]) {
+				setUserImageName((p) => (p = reqq.data[0].userimage));
+			} else {
+				return;
+			}
 			setTotalList(req.data.length);
-			console.log(req.data);
+			setUserList(req.data);
 		} catch (error) {
 			console.log(error);
 		}
 	};
+
+	// const selectUserImage = async () => {
+	// 	try {
+	// 		const req = await axios.post('http://localhost:8080/userprofile', {
+	// 			userid: isUser,
+	// 		});
+	// 		setUserImageName((p) => (p = req.data[0].userimage));
+	// 	} catch (error) {
+	// 		console.log(error);
+	// 	}
+	// };
 
 	useLayoutEffect(() => {
 		auth();
@@ -415,10 +459,13 @@ function Personal({ isLogin }) {
 
 	useLayoutEffect(() => {
 		selectList();
-		console.log(isLogin);
-	}, [isUser, isOpen]);
+		// selectUserImage();
+	}, [isUser, isOpen, createList, isChange]);
 
-	useLayoutEffect(() => {}, [isOpen]);
+	useEffect(() => {
+		console.log(`ischange = ${isChange}`);
+	});
+
 	//onEvent func 처리
 	const changeMenu = () => {
 		setSelectMenu((p) => (p = 1));
@@ -468,13 +515,13 @@ function Personal({ isLogin }) {
 	const listSubmit = async (e) => {
 		e.preventDefault();
 		if (title.length > 0) {
-			console.log({ title: title, contents: contents, images: images });
+			// console.log({ title: title, contents: contents, images: images });
 			const imgData = new FormData();
-			const imagearr = images.map((image) => image.image);
+			// const imagearr = images.map((image) => image.image);
 			imgData.append('title', title);
 			imgData.append('contents', contents);
 			imgData.append('author', isUser);
-			images.map((image, index) => imgData.append('img', image.image));
+			images.map((image) => imgData.append('img', image.image));
 			// imgData.append('img', imagearr);
 			const req = await axios.post(
 				`http://localhost:8080/userThumbnail`,
@@ -491,13 +538,29 @@ function Personal({ isLogin }) {
 
 	const cancelSheets = () => {
 		setIsOpen((p) => (p = false));
-		setLoadedImages([]);
-		setImages([]);
-		setLoadedImagesId(0);
+		setLoadedImages((p) => (p = []));
+		setImages((p) => (p = []));
+		setLoadedImagesId((p) => (p = 0));
+		setTitle((p) => (p = ''));
+		setContents((p) => (p = ''));
+		setOnTitleChange((p) => (p = false));
 	};
 
 	const openSheets = () => {
 		setIsOpen((p) => (p = true));
+	};
+
+	const updateUserImage = async (e) => {
+		const image = e.target.files[0];
+		const profileData = new FormData();
+		profileData.append('userid', isUser);
+		profileData.append('img', image);
+		const req = await axios.post(
+			`http://localhost:8080/userprofileimage`,
+			profileData,
+			{ headers: { 'Content-Type': 'multipart/form-data' } }
+		);
+		setUserImageName((p) => (p = req.data));
 	};
 
 	useEffect(() => {
@@ -505,8 +568,8 @@ function Personal({ isLogin }) {
 	});
 
 	useEffect(() => {
-		console.log(images);
-		console.log(loadedImages);
+		// console.log(images);
+		// console.log(loadedImages);
 	}, [images]);
 
 	return (
@@ -522,7 +585,28 @@ function Personal({ isLogin }) {
 				</FlowerContainer>
 				<UserBoard>
 					<UserProfile>
-						<UserPicture src={person96} alt=''></UserPicture>
+						<UserPictureWrapper>
+							<UserPicture
+								src={
+									userImageName
+										? `http://localhost:8080/${isUser}/profile/${userImageName}`
+										: null
+								}
+								alt=''
+							></UserPicture>
+							<img
+								src={profilePictureIcon}
+								alt=''
+								onClick={() => profileImage.current.click()}
+							/>
+							<input
+								type='file'
+								accept='image/*'
+								//함수를 실행시키지 않아야 e로 file값 받아오기 가능
+								onChange={updateUserImage}
+								ref={profileImage}
+							/>
+						</UserPictureWrapper>
 						<div>
 							<span>{isUser}</span>님, 환영합니다!
 						</div>
@@ -572,6 +656,17 @@ function Personal({ isLogin }) {
 								</TodoListInfo>
 							)}
 							<SeparateBar />
+							{totalList > 0
+								? userList.map((list, index) => (
+										<UserPost
+											index={index}
+											list={list}
+											userId={isUser}
+											isOpen={createList}
+											key={index}
+										></UserPost>
+								  ))
+								: null}
 						</TodoList>
 					) : (
 						<FlowerList></FlowerList>
@@ -587,9 +682,21 @@ function Personal({ isLogin }) {
 						<CreateTitle>
 							<div></div>버킷리스트 작성하기
 						</CreateTitle>
-						<CreatedList>
-							<SeparateBar />
-						</CreatedList>
+						<SeparateBar />
+						<CreatedListWrapper>
+							{totalList > 0
+								? userList.map((list, index) => (
+										<CreatedList
+											key={index}
+											index={index}
+											list={list}
+											userId={isUser}
+											isOpen={createList}
+											setIsChange={setIsChange}
+										></CreatedList>
+								  ))
+								: null}
+						</CreatedListWrapper>
 						{isOpen ? (
 							<CreateForm onSubmit={listSubmit}>
 								<div>
@@ -601,10 +708,11 @@ function Personal({ isLogin }) {
 										onChange={insertTitle}
 										id='title'
 										type='text'
+										placeholder='100자 이내'
 									/>
 									{onTitleChange ? (
 										title.length < 1 ? (
-											<span>마! 제목은 있어야 한다 아입니까?</span>
+											<span>제목 줘</span>
 										) : null
 									) : null}
 								</div>
@@ -617,6 +725,7 @@ function Personal({ isLogin }) {
 										onChange={insertContents}
 										id='contents'
 										type='text'
+										placeholder='200자 이내'
 										rows={5}
 										maxLength={200}
 									/>

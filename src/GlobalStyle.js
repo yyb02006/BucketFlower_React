@@ -93,7 +93,7 @@ input{
 	background-color: #e9e9e9;
 }
 
-input::placeholder{
+input::placeholder, textarea::placeholder{
   font-family: 'S-CoreDream';
   font-size: 0.825rem;
 	font-weight: 500;
