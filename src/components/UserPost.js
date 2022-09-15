@@ -80,7 +80,7 @@ const ModalBackground = styled.div`
 	animation-timing-function: ease-in-out;
 	animation-fill-mode: forwards;
 	${(props) =>
-		props.onAnimation &&
+		props.animation &&
 		css`
 			animation-name: ${fadeOut};
 		`}
@@ -183,7 +183,7 @@ const UserPost = function ({ index, list, userId, isOpen, isCompleted }) {
 			{!(!visible && !animation && !onSelectFlowerModal) ? (
 				<ModalBackground
 					onClick={onCancel}
-					onAnimation={animation}
+					animation={animation}
 				></ModalBackground>
 			) : null}
 			<ConfirmModal
@@ -193,10 +193,14 @@ const UserPost = function ({ index, list, userId, isOpen, isCompleted }) {
 				onCancel={onCancel}
 				title='버킷리스트를 달성하셨나요?'
 				titleBarWidth={'150px'}
-				content='한 번 완료한 버킷리스트는 취소할 수 없어요.'
-				confirmText='완료하기'
+				content='한 번 완료한 버킷리스트는 취소할 수 없으니\n정말 완료되었다면 다음 단계로 넘어가주세요.'
+				confirmText='버킷플라워 선택하기'
 			/>
-			<SelectFlowerModal onModal={onSelectFlowerModal} onCancel={onCancel} />
+			<SelectFlowerModal
+				onModal={onSelectFlowerModal}
+				onCancel={onCancel}
+				userId={userId}
+			/>
 		</PostWrapper>
 	);
 };

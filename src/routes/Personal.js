@@ -228,10 +228,23 @@ const SeparateBar = styled.div`
 const FlowerList = styled.div`
 	width: 580px;
 	height: 600px;
-	background-color: skyblue;
 	margin-top: 44px;
 	animation: ${MoveBox} 0.5s;
 	animation-timing-function: ease-in-out(0.42, 0, 0.58, 1);
+	display: flex;
+	& > div:not(:nth-child(4n)) {
+		margin-right: 6px;
+	}
+`;
+
+const BranchWrapper = styled.div`
+	width: 140px;
+	height: 200px;
+	background-color: #efefef;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 8px;
 `;
 
 const WriteButton = styled.input`
@@ -504,6 +517,7 @@ function Personal({ isLogin }) {
 	const [changedName, setChangedName] = useState('');
 	const [ChangedNameAlert, setChangedNameAlert] = useState(false);
 	const [onNameModal, setOnNameModal] = useState(false);
+	const [rewards, setRewards] = useState([]);
 	const move = useNavigate();
 	const containerRef = useRef();
 	const selectImage = useRef();
@@ -554,6 +568,18 @@ function Personal({ isLogin }) {
 		}
 	};
 
+	const loadUserRewards = async () => {
+		try {
+			const req = await axios.post('http://localhost:8080/selectreward', {
+				userid: isUser,
+			});
+			setRewards(req.data);
+			console.log(req.data);
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
 	useLayoutEffect(() => {
 		auth();
 	}, []);
@@ -590,6 +616,12 @@ function Personal({ isLogin }) {
 		const checkOverlap = userList.filter((arr) => arr.Title === title);
 		setOverlapList((p) => (p = checkOverlap));
 	}, [title]);
+
+	useEffect(() => {
+		if (selectMenu === 2) {
+			loadUserRewards();
+		}
+	}, [selectMenu]);
 
 	//onEvent func 처리
 	const changeMenu = () => {
@@ -835,7 +867,18 @@ function Personal({ isLogin }) {
 								: null}
 						</TodoList>
 					) : (
-						<FlowerList></FlowerList>
+						<FlowerList>
+							{rewards
+								.filter((arr) => arr.theme === 'branch')
+								.map((arr) => (
+									<BranchWrapper key={arr.id}>
+										<img
+											src={`http://localhost:8080/images/${arr.filename}.svg`}
+											alt=''
+										/>
+									</BranchWrapper>
+								))}
+						</FlowerList>
 					)}
 				</UserBoard>
 			</PersonalWrapper>

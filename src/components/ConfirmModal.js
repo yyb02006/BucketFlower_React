@@ -2,24 +2,6 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import styled, { css, keyframes } from 'styled-components';
 
-const fadeIn = keyframes`
-	0%{
-		opacity: 0;
-	}
-	100%{
-		opacity: 35%;
-	}
-`;
-
-const fadeOut = keyframes`
-	0%{
-		opacity: 35%;
-	}
-	100%{
-		opacity: 0;
-	}
-  `;
-
 const slideUp = keyframes`
 	0%{
 		margin-top: 20px;
@@ -40,24 +22,6 @@ const slideDown = keyframes`
     opacity: 0;
 	}`;
 
-const ModalBackground = styled.div`
-	width: 100%;
-	height: 100%;
-	background-color: #000000;
-	position: fixed;
-	top: 0;
-	left: 0;
-	animation-name: ${fadeIn};
-	animation-duration: 0.3s;
-	animation-timing-function: ease-in-out;
-	animation-fill-mode: forwards;
-	${(props) =>
-		props.onAnimation &&
-		css`
-			animation-name: ${fadeOut};
-		`}
-`;
-
 const ModalContainer = styled.div`
 	box-sizing: border-box;
 	width: 400px;
@@ -74,8 +38,9 @@ const ModalContainer = styled.div`
 	animation-duration: 0.3s;
 	animation-timing-function: ease-in-out;
 	animation-fill-mode: forwards;
+
 	${(props) =>
-		props.onAnimation &&
+		props.animation &&
 		css`
 			animation-name: ${slideDown};
 		`}
@@ -83,19 +48,22 @@ const ModalContainer = styled.div`
 	& > div:nth-child(1) {
 		border-bottom: 4px solid #32a797;
 		width: ${(props) => props.width || ''};
+		margin-bottom: 4px;
 	}
 	& > div:nth-child(2) {
-		font-size: 1.125rem;
+		font-size: 1.375rem;
 	}
 	& > div:nth-child(3) {
 		font-size: 1rem;
 		font-weight: 400;
-		margin-top: 36px;
+		margin-top: 48px;
+		white-space: pre-wrap;
+		line-height: 1.625rem;
 	}
 `;
 
 const ModalButtons = styled.div`
-	margin-top: 36px;
+	margin-top: 48px;
 	display: flex;
 	justify-content: space-between;
 	button {
@@ -141,10 +109,17 @@ function ConfirmModal({
 	if (!animation && !visible) return null;
 	return (
 		<>
-			<ModalContainer width={titleBarWidth} onAnimation={animation}>
+			<ModalContainer width={titleBarWidth} animation={animation}>
 				<div></div>
 				<div>{title}</div>
-				<div>{content}</div>
+				<div>
+					{content.split('\\n').map((arr, index) => (
+						<span key={index}>
+							{arr}
+							<br />
+						</span>
+					))}
+				</div>
 				<ModalButtons>
 					<CancelButton onClick={onCancel}>{cancelText}</CancelButton>
 					<ConfirmButton onClick={onConfirm}>{confirmText}</ConfirmButton>

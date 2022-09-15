@@ -1,4 +1,5 @@
 import { isVisible } from '@testing-library/user-event/dist/utils';
+import axios from 'axios';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import styled, { css, keyframes } from 'styled-components';
@@ -37,7 +38,6 @@ const ModalContainer = styled.div`
 	box-sizing: border-box;
 	width: 780px;
 	background-color: #fafafa;
-	height: calc(100vh - 96px);
 	min-height: 400px;
 	position: fixed;
 	top: 48px;
@@ -45,6 +45,7 @@ const ModalContainer = styled.div`
 	transform: translateX(-50%);
 	border-radius: 16px;
 	padding-top: 24px;
+	overflow: hidden;
 	filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.2));
 	animation-name: ${slideUp};
 	animation-duration: 0.3s;
@@ -52,7 +53,7 @@ const ModalContainer = styled.div`
 	animation-fill-mode: forwards;
 
 	${(props) =>
-		props.onAnimation &&
+		props.animation &&
 		css`
 			animation-name: ${slideDown};
 		`}
@@ -60,7 +61,7 @@ const ModalContainer = styled.div`
 
 const Title = styled.div`
 	font-size: 1.25rem;
-	font-weight: 400;
+	font-weight: 500;
 	display: flex;
 	justify-content: center;
 	color: #32a797;
@@ -70,7 +71,7 @@ const MenuContainer = styled.div`
 	display: flex;
 	width: 100%;
 	height: 52px;
-	margin-top: 36px;
+	margin-top: 48px;
 	border-bottom: 4px solid #bcbcbc;
 	font-size: 1.25rem;
 	font-weight: 400;
@@ -97,9 +98,9 @@ const FlowerTap = styled.button`
 	color: ${(props) => (props.current === 'Flowers' ? '#32a797' : '#bcbcbc')};
 `;
 
-const LeafeTap = styled.button`
+const LeafTap = styled.button`
 	background-color: transparent;
-	color: ${(props) => (props.current === 'Leafes' ? '#32a797' : '#bcbcbc')};
+	color: ${(props) => (props.current === 'Leaves' ? '#32a797' : '#bcbcbc')};
 `;
 
 const IndicateBar = styled.div`
@@ -115,12 +116,6 @@ const IndicateBar = styled.div`
 	animation-timing-function: ease-in-out;
 	animation-fill-mode: forwards;
 `;
-
-const Trunks = styled.div``;
-
-const Flowers = styled.div``;
-
-const Leafes = styled.div``;
 
 const Close = styled.button`
 	border-radius: 0;
@@ -141,13 +136,104 @@ const Close = styled.button`
 	}
 `;
 
-function SelectFlowerModal({ onModal, onCancel }) {
+const SubTitle = styled.div`
+	font-weight: 500;
+	font-size: 1.125rem;
+	margin-bottom: 8px;
+	margin-top: 16px;
+`;
+
+const Trunks = styled.div`
+	box-sizing: border-box;
+	width: 100%;
+	height: calc(100vh - 300px);
+	min-height: 300px;
+	padding: 0 24px;
+	overflow: overlay;
+	animation-name: ${slideUp};
+	animation-duration: 0.3s;
+	animation-timing-function: ease-in-out;
+	animation-fill-mode: forwards;
+`;
+
+const Flowers = styled.div`
+	box-sizing: border-box;
+	width: 100%;
+	height: calc(100vh - 300px);
+	min-height: 300px;
+	padding: 0 24px;
+	overflow: overlay;
+	animation-name: ${slideUp};
+	animation-duration: 0.3s;
+	animation-timing-function: ease-in-out;
+	animation-fill-mode: forwards;
+`;
+
+const Leaves = styled.div`
+	box-sizing: border-box;
+	width: 100%;
+	height: calc(100vh - 300px);
+	min-height: 300px;
+	padding: 0 24px;
+	overflow: overlay;
+	animation-name: ${slideUp};
+	animation-duration: 0.3s;
+	animation-timing-function: ease-in-out;
+	animation-fill-mode: forwards;
+`;
+
+const RewardsInner = styled.div`
+	display: flex;
+	flex-wrap: wrap;
+	& > button:not(:nth-child(5n)) {
+		margin-right: 8px;
+	}
+`;
+
+const BranchesWrapper = styled.button`
+	width: 140px;
+	height: 200px;
+	background-color: #e9e9e9;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 8px;
+	margin-bottom: 8px;
+	&:hover {
+		background-color: #65e8c4;
+	}
+`;
+
+function SelectFlowerModal({ onModal, onCancel, userId }) {
 	const [visible, setVisible] = useState(false);
 	const [animation, setAnimation] = useState(onModal);
 	const [tapMenu, setTapMenu] = useState('Trunks');
 	const [swipeBar, setSwipeBar] = useState('0px');
 	const [prevSwipeBar, setPrevSwipeBar] = useState('0px');
+	const [trunks, setTrunks] = useState([]);
+	const [flowers, setFlowers] = useState([]);
+	const [leaves, setLeaves] = useState([]);
 	const [swipe, setSwipe] = useState();
+
+	const loadRewards = async () => {
+		try {
+			const req = await axios.post('http://localhost:8080/loadRewards');
+			const trunk = req.data.filter((arr) => arr.category === 'trunk');
+			const flower = req.data.filter((arr) => arr.category === 'flower');
+			const leaf = req.data.filter((arr) => arr.category === 'leaf');
+			setTrunks((p) => (p = trunk));
+			setFlowers((p) => (p = flower));
+			setLeaves((p) => (p = leaf));
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	useEffect(() => {
+		if (onModal) {
+			loadRewards();
+		}
+	}, [onModal]);
 
 	useEffect(() => {
 		if (visible && !onModal) {
@@ -180,34 +266,138 @@ function SelectFlowerModal({ onModal, onCancel }) {
 		setSwipeBar((p) => (p = '-260px'));
 	};
 
-	const onLeafes = () => {
-		setTapMenu((p) => (p = 'Leafes'));
+	const onLeaves = () => {
+		setTapMenu((p) => (p = 'Leaves'));
 		setSwipeBar((p) => (p = '-520px'));
+	};
+
+	const selectReward = async (file, category, theme) => {
+		try {
+			const req = await axios.post('http://localhost:8080/setreward', {
+				userid: userId,
+				rewards: file,
+				category: category,
+				theme: theme,
+			});
+			onCancel();
+		} catch (error) {
+			console.log(error);
+		}
 	};
 
 	if (!visible && !animation) return null;
 	return (
 		<>
-			<ModalContainer onAnimation={animation}>
+			<ModalContainer animation={animation}>
 				<Close onClick={onCancel}>
 					<img src={cancelIcon} alt='' /> 닫기
 				</Close>
-				<Title>가지고싶은 보상을 골라주세요!</Title>
+				<Title>원하는 버킷플라워를 골라주세요!</Title>
 				<MenuContainer>
 					<TrunkTap onClick={onTrunks} current={tapMenu}>
-						가지
+						줄기
 					</TrunkTap>
 					<FlowerTap onClick={onFlowers} current={tapMenu}>
 						꽃
 					</FlowerTap>
-					<LeafeTap onClick={onLeafes} current={tapMenu}>
+					<LeafTap onClick={onLeaves} current={tapMenu}>
 						잎사귀
-					</LeafeTap>
+					</LeafTap>
 				</MenuContainer>
 				<IndicateBar current={swipeBar} previous={prevSwipeBar}></IndicateBar>
-				<Trunks></Trunks>
-				<Flowers></Flowers>
-				<Leafes></Leafes>
+				{tapMenu === 'Trunks' ? (
+					<Trunks>
+						<SubTitle>가지</SubTitle>
+						<RewardsInner>
+							{trunks
+								.filter((arr) => arr.theme === 'branch')
+								.map((arr) => (
+									<BranchesWrapper
+										key={arr.id}
+										onClick={() =>
+											selectReward(arr.filename, arr.category, arr.theme)
+										}
+									>
+										<img
+											src={`http://localhost:8080/images/${arr.filename}.svg`}
+											alt=''
+										/>
+									</BranchesWrapper>
+								))}
+						</RewardsInner>
+						<SubTitle>줄기</SubTitle>
+						<RewardsInner>
+							{trunks
+								.filter((arr) => arr.theme === 'stem')
+								.map((arr) => (
+									<BranchesWrapper key={arr.id}>
+										<img
+											src={`http://localhost:8080/images/${arr.filename}.svg`}
+											alt=''
+										/>
+									</BranchesWrapper>
+								))}
+						</RewardsInner>
+					</Trunks>
+				) : tapMenu === 'Flowers' ? (
+					<Flowers>
+						<SubTitle>붉은꽃</SubTitle>
+						<RewardsInner>
+							{flowers
+								.filter((arr) => arr.theme === 'red')
+								.map((arr) => (
+									<BranchesWrapper key={arr.id}>
+										<img
+											src={`http://localhost:8080/images/${arr.filename}.svg`}
+											alt=''
+										/>
+									</BranchesWrapper>
+								))}
+						</RewardsInner>
+						<SubTitle>보라꽃</SubTitle>
+						<RewardsInner>
+							{flowers
+								.filter((arr) => arr.theme === 'purple')
+								.map((arr) => (
+									<BranchesWrapper key={arr.id}>
+										<img
+											src={`http://localhost:8080/images/${arr.filename}.svg`}
+											alt=''
+										/>
+									</BranchesWrapper>
+								))}
+						</RewardsInner>
+					</Flowers>
+				) : tapMenu === 'Leaves' ? (
+					<Leaves>
+						<SubTitle>둥근 잎</SubTitle>
+						<RewardsInner>
+							{leaves
+								.filter((arr) => arr.theme === 'rounded')
+								.map((arr) => (
+									<BranchesWrapper key={arr.id}>
+										<img
+											src={`http://localhost:8080/images/${arr.filename}.svg`}
+											alt=''
+										/>
+									</BranchesWrapper>
+								))}
+						</RewardsInner>
+						<SubTitle>뾰족한 잎</SubTitle>
+						<RewardsInner>
+							{leaves
+								.filter((arr) => arr.theme === 'pointed')
+								.map((arr) => (
+									<BranchesWrapper key={arr.id}>
+										<img
+											src={`http://localhost:8080/images/${arr.filename}.svg`}
+											alt=''
+										/>
+									</BranchesWrapper>
+								))}
+						</RewardsInner>
+					</Leaves>
+				) : null}
 			</ModalContainer>
 		</>
 	);
