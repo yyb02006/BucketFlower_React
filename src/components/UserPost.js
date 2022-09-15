@@ -1,12 +1,33 @@
 import axios from 'axios';
 import { useEffect } from 'react';
 import { useState } from 'react';
-import styled from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import SeparateBar from './SeparateBar';
 import openIcon from '../assets/open_icon.svg';
 import closeIcon from '../assets/close_icon.svg';
+import ConfirmModal from './ConfirmModal';
+import SelectFlowerModal from './SelectFlowerModal';
+
+const fadeIn = keyframes`
+	0%{
+		opacity: 0;
+	}
+	100%{
+		opacity: 35%;
+	}
+`;
+
+const fadeOut = keyframes`
+	0%{
+		opacity: 35%;
+	}
+	100%{
+		opacity: 0;
+	}
+  `;
 
 const TitleBox = styled.div`
+	box-sizing: border-box;
 	padding: 8px 0;
 	font-size: 1rem;
 	display: flex;
@@ -47,9 +68,32 @@ const PhotoContainer = styled.div`
 	}
 `;
 
-const UserPost = function ({ index, list, userId, isOpen }) {
+const ModalBackground = styled.div`
+	width: 100%;
+	height: 100%;
+	background-color: #000000;
+	position: fixed;
+	top: 0;
+	left: 0;
+	animation-name: ${fadeIn};
+	animation-duration: 0.3s;
+	animation-timing-function: ease-in-out;
+	animation-fill-mode: forwards;
+	${(props) =>
+		props.onAnimation &&
+		css`
+			animation-name: ${fadeOut};
+		`}
+`;
+
+const UserPost = function ({ index, list, userId, isOpen, isCompleted }) {
 	const [post, setPost] = useState(false);
 	const [loadImages, setLoadImages] = useState({});
+	const [onCompleteModal, setOnCompleteModal] = useState(false);
+	const [onSelectFlowerModal, setOnSelectFlowerModal] = useState(false);
+	const [animation, setAnimation] = useState(false);
+	const [visible, setVisible] = useState(onCompleteModal);
+	const [complete, setComplete] = useState(false);
 	const showPost = () => {
 		setPost((p) => (p = true));
 	};
@@ -70,6 +114,34 @@ const UserPost = function ({ index, list, userId, isOpen }) {
 	useEffect(() => {
 		loadImg();
 	}, [isOpen]);
+
+	useEffect(() => {
+		if (visible && !onCompleteModal && !onSelectFlowerModal) {
+			setAnimation((p) => (p = true));
+			setTimeout(() => {
+				setAnimation((p) => (p = false));
+			}, 300);
+		}
+		if (!onSelectFlowerModal) {
+			setVisible((p) => (p = onCompleteModal));
+		} else if (onSelectFlowerModal) {
+			setVisible((p) => (p = onSelectFlowerModal));
+		}
+	}, [visible, onCompleteModal, onSelectFlowerModal]);
+
+	const onConfirm = () => {
+		setOnCompleteModal((p) => (p = false));
+		setOnSelectFlowerModal((p) => (p = true));
+	};
+
+	const onCancel = () => {
+		setOnCompleteModal((p) => (p = false));
+		setOnSelectFlowerModal((p) => (p = false));
+	};
+
+	const onComplete = () => {
+		setOnCompleteModal((p) => (p = true));
+	};
 	return (
 		<PostWrapper key={index}>
 			<TitleBox>
@@ -86,7 +158,7 @@ const UserPost = function ({ index, list, userId, isOpen }) {
 							<img src={openIcon} alt='' />
 						</button>
 					)}
-					<button>완료</button>
+					<button onClick={onComplete}>완료</button>
 				</div>
 			</TitleBox>
 			{post ? (
@@ -107,8 +179,24 @@ const UserPost = function ({ index, list, userId, isOpen }) {
 						.replace('T', '일 등록')}
 				</ContentsBox>
 			) : null}
-
 			<SeparateBar margin={'8px'}></SeparateBar>
+			{!(!visible && !animation && !onSelectFlowerModal) ? (
+				<ModalBackground
+					onClick={onCancel}
+					onAnimation={animation}
+				></ModalBackground>
+			) : null}
+			<ConfirmModal
+				onModal={onCompleteModal}
+				onContinue={onSelectFlowerModal}
+				onConfirm={onConfirm}
+				onCancel={onCancel}
+				title='버킷리스트를 달성하셨나요?'
+				titleBarWidth={'150px'}
+				content='한 번 완료한 버킷리스트는 취소할 수 없어요.'
+				confirmText='완료하기'
+			/>
+			<SelectFlowerModal onModal={onSelectFlowerModal} onCancel={onCancel} />
 		</PostWrapper>
 	);
 };

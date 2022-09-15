@@ -85,7 +85,7 @@ label{
 input{
   font-family: 'S-CoreDream';
   font-weight: 500;
-  font-size: 0.825rem;
+  font-size: 0.875rem;
 	width: 100%;
 	border: none;
 	border-radius: 16px;

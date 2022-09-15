@@ -9,15 +9,17 @@ const SignupForm = styled.form`
 	background-color: #fafafa;
 	width: 360px;
 	margin: 0 auto;
-	position: relative;
-	top: 30vh;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 	filter: drop-shadow(4px 8px 24px rgba(50, 167, 151, 1));
 	& label {
 		color: #404040;
 		font-weight: 500;
 	}
 	& > div {
-		margin-bottom: 32px;
+		margin-bottom: 16px;
 		font-size: 1.125rem;
 		color: #32a797;
 	}
@@ -52,7 +54,7 @@ const SignupForm = styled.form`
 	}
 	& button {
 		width: 100%;
-		margin-top: 12px;
+		margin-top: 28px;
 	}
 `;
 
@@ -103,6 +105,11 @@ function Signup() {
 	const [passwordAlert, setPasswordAlert] = useState(false);
 	const [idOverlap, setIdOverlap] = useState(-1);
 	const [signup, setSignup] = useState(false);
+	const [nickname, setNickname] = useState('');
+	const [nameOverlap, setNameOverlap] = useState('');
+	const [nicknameAlert, setNicknameAlert] = useState(false);
+	const [confirmPassword, setConfirmPassword] = useState('');
+	const [confirmPasswordAlert, setConfirmPasswordAlert] = useState(false);
 	const move = useNavigate();
 	//정규식 정의
 	const special = /[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/g;
@@ -113,9 +120,19 @@ function Signup() {
 		setIdAlert((p) => (p = true));
 	};
 
+	const insertName = (e) => {
+		setNickname((p) => (p = e.target.value));
+		setNicknameAlert((p) => (p = true));
+	};
+
 	const insertPassword = (e) => {
 		setPassword((p) => (p = e.target.value));
 		setPasswordAlert((p) => (p = true));
+	};
+
+	const insertConfirmPassword = (e) => {
+		setConfirmPassword((p) => (p = e.target.value));
+		setConfirmPasswordAlert((p) => (p = true));
 	};
 
 	const twoClickAlert = () => {
@@ -137,6 +154,18 @@ function Signup() {
 		}
 	};
 
+	const checkNameOverlap = async () => {
+		try {
+			const req = await axios.post('http://localhost:8080/checkname', {
+				name: nickname,
+			});
+			console.log(req.data.overlap);
+			setNameOverlap((p) => (p = req.data.overlap));
+		} catch (err) {
+			console.log(err);
+		}
+	};
+
 	const confirmSignup = async (e) => {
 		e.preventDefault();
 		if (
@@ -150,7 +179,13 @@ function Signup() {
 			password.length > 1 &&
 			password.toLowerCase() === password &&
 			!password.match(special) &&
-			!password.match(blank)
+			!password.match(blank) &&
+			nickname.length < 10 &&
+			nickname.length > 0 &&
+			!nickname.match(special) &&
+			!nickname.match(blank) &&
+			nameOverlap === false &&
+			confirmPassword === password
 		) {
 			console.log(`id=${id}, password=${password}`);
 			try {
@@ -164,15 +199,27 @@ function Signup() {
 			} catch (error) {
 				console.log(error);
 			}
+		} else if (
+			id.length === 0 ||
+			password.length === 0 ||
+			nickname.length === 0
+		) {
+			if (id.length === 0) {
+				setIdAlert((p) => (p = true));
+			}
+			if (password.length === 0) {
+				setPasswordAlert((p) => (p = true));
+			}
+			if (nickname.length === 0) {
+				setNicknameAlert((p) => (p = true));
+			}
+		} else if (confirmPassword.length === 0) {
+			setConfirmPasswordAlert((p) => (p = true));
 		} else {
 			return;
 		}
 	};
-	// console.log(id, password);
 	console.log(idOverlap);
-	// !(id.toLowerCase === id)
-	// id.match(blank) ? <span>아이디는 소문자와 숫자만 입력 가능합니다.</span> : null
-	// !(id.toLowerCase === id) ? <span>아이디는 소문자와 숫자만 입력 가능합니다.</span> : null
 	return (
 		<div>
 			<RegisterBackground />
@@ -222,6 +269,32 @@ function Signup() {
 						) : null}
 					</div>
 					<div>
+						<label htmlFor='nickname'>닉네임</label>
+						<input
+							id='nickname'
+							type='text'
+							value={nickname}
+							onBlur={checkNameOverlap}
+							onChange={insertName}
+							placeholder='10자 이내의 한글, 영문, 숫자'
+						/>
+						{nicknameAlert ? (
+							nickname.length > 10 ? (
+								<span>닉네임은 10자 이하만 입력 가능합니다.</span>
+							) : nickname.length < 1 ? (
+								<span>닉네임을 입력해주세요</span>
+							) : nickname.match(special) ? (
+								<span>닉네임은 한글, 영문, 숫자만 입력 가능합니다.</span>
+							) : nickname.match(blank) ? (
+								<span>닉네임은 한글, 영문, 숫자만 입력 가능합니다.</span>
+							) : nameOverlap ? (
+								<span>이미 생성된 닉네임 입니다.</span>
+							) : nameOverlap === false ? (
+								<SucSpan>사용가능한 닉네임 입니다.</SucSpan>
+							) : null
+						) : null}
+					</div>
+					<div>
 						<label htmlFor='password'>비밀번호</label>
 						<input
 							id='password'
@@ -244,6 +317,24 @@ function Signup() {
 							) : !password ? (
 								<span>비밀번호를 입력해주세요</span>
 							) : null
+						) : null}
+					</div>
+					<div>
+						<label htmlFor='confirmpassword'>비밀번호 확인</label>
+						<input
+							id='confirmpassword'
+							onChange={insertConfirmPassword}
+							value={confirmPassword}
+							type='password'
+						/>
+						{confirmPasswordAlert ? (
+							confirmPassword.length === 0 ? (
+								<span>비밀번호를 한 번 더 입력해주세요</span>
+							) : confirmPassword === password ? (
+								<SucSpan>비밀번호가 일치합니다.</SucSpan>
+							) : (
+								<span>비밀번호가 일치하지 않습니다.</span>
+							)
 						) : null}
 					</div>
 					<button>완료하고 로그인하기</button>

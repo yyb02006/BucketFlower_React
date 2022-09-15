@@ -100,14 +100,15 @@ function Home() {
 	const [width, setWidth] = useState('');
 	const [innerWidth, setInnerWidth] = useState('');
 	const [isLogin, setIsLogin] = useState('');
+	const [testY, setTestY] = useState(0);
 	const VideoRef = useRef();
 	const move = useNavigate();
 
-	const test = async () => {
+	const auth = async () => {
 		try {
 			const req = await axiosInstance.get('http://localhost:8080/authtoken');
 			setIsLogin((p) => (p = req.data.id));
-			// console.log('First' + req.data.id);
+			console.log('First' + req.data.id);
 		} catch (error) {
 			console.log('auth' + error);
 		}
@@ -140,11 +141,11 @@ function Home() {
 	}, [offsetY]);
 
 	useLayoutEffect(() => {
-		test();
+		auth();
 		if (isLogin) {
 			move('userhome');
 		}
-	});
+	}, []);
 	// console.log(cardMove);
 	return (
 		<div>

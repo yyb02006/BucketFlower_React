@@ -176,7 +176,7 @@ const ConfirmDeleteContainer = styled.div`
 	}
 `;
 
-function CreatedList({ index, list, userId, isOpen, setIsChange }) {
+function CreatedList({ index, list, userId, isOpen, setIsChange, fullList }) {
 	const [modify, setModify] = useState(false);
 	const [onTitleChange, setOnTitleChange] = useState(false);
 	const [title, setTitle] = useState(list.Title);
@@ -188,6 +188,7 @@ function CreatedList({ index, list, userId, isOpen, setIsChange }) {
 	const [primalImages, setPrimalImages] = useState([]);
 	const [deleteImages, setDeleteImages] = useState([]);
 	const [isDelete, setIsDelete] = useState(false);
+	const [overlapList, setOverlapList] = useState('');
 
 	const selectImage = useRef();
 
@@ -212,6 +213,13 @@ function CreatedList({ index, list, userId, isOpen, setIsChange }) {
 		setTitle((p) => (p = list.Title));
 		setContents((p) => (p = list.Contents));
 	}, [list]);
+
+	useEffect(() => {
+		const checkOverlap = fullList
+			.filter((arr) => arr.Title !== list.Title)
+			.filter((arr) => arr.Title === title);
+		setOverlapList((p) => (p = checkOverlap));
+	}, [title]);
 
 	const onModify = () => {
 		setModify((p) => (p = true));
@@ -253,7 +261,7 @@ function CreatedList({ index, list, userId, isOpen, setIsChange }) {
 	};
 	const submitModify = async (e) => {
 		e.preventDefault();
-		if (title.length > 0) {
+		if (title.length > 0 && overlapList.length === 0) {
 			const modifiedData = new FormData();
 			modifiedData.append('title', title);
 			modifiedData.append('contents', contents);
@@ -340,9 +348,13 @@ function CreatedList({ index, list, userId, isOpen, setIsChange }) {
 							placeholder='100자 이내'
 						/>
 						{onTitleChange ? (
-							title.length < 1 ? (
-								<span>제목내놔라</span>
-							) : null
+							title.length > 0 ? (
+								overlapList.length === 0 ? null : (
+									<span>겹치는 버킷리스트가 있어요</span>
+								)
+							) : (
+								<span>제목 줘</span>
+							)
 						) : null}
 					</div>
 					<div>

@@ -4,7 +4,7 @@ import styled, { css, keyframes } from 'styled-components';
 import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import logo from '../assets/logo.svg';
 import person96 from '../assets/personicon_96.svg';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import write from '../assets/writebutton.svg';
 import cancel from '../assets/cancel_icon.svg';
 import confirm from '../assets/confirm.svg';
@@ -15,6 +15,7 @@ import deleteIcon from '../assets/deleteImg_icon.svg';
 import profilePictureIcon from '../assets/profilepicture_icon.svg';
 import UserPost from '../components/UserPost';
 import CreatedList from '../components/CreatedList';
+axios.defaults.withCredentials = true;
 
 const moveMenuBar = keyframes`
 	0%{
@@ -105,6 +106,25 @@ const UserProfile = styled.div`
 	& > div:nth-child(2) > span {
 		color: #32a797;
 	}
+	& > div:nth-child(3) {
+		max-width: 580px;
+		margin: 0 auto;
+		display: flex;
+		justify-content: center;
+		font-weight: 400;
+		font-size: 0.875rem;
+		padding-top: 8px;
+	}
+	& > div:nth-child(3) > span {
+		margin: 0 12px;
+		cursor: pointer;
+	}
+	& > div:nth-child(3) > span:hover {
+		color: #32a797;
+	}
+	& > div:nth-child(3) > div {
+		border-right: 2px solid #909090;
+	}
 `;
 
 const UserPictureWrapper = styled.div`
@@ -157,7 +177,7 @@ const FlowerListBar = styled.div``;
 const TodoListBtn = styled.button`
 	display: inline-block;
 	background-color: #fafafa;
-	color: ${(props) => (props.isSelect < 2 ? '#404040' : '#bcbcbc')};
+	color: ${(props) => (props.isSelect < 2 ? '#32a797' : '#bcbcbc')};
 	height: 60px;
 	width: 290px;
 	border-radius: 0px;
@@ -171,7 +191,7 @@ const TodoListBtn = styled.button`
 const FlowerListBtn = styled.button`
 	display: inline-block;
 	background-color: #fafafa;
-	color: ${(props) => (props.isSelect === 2 ? '#404040' : '#bcbcbc')};
+	color: ${(props) => (props.isSelect === 2 ? '#32a797' : '#bcbcbc')};
 	height: 60px;
 	width: 290px;
 	border-radius: 0px;
@@ -187,7 +207,7 @@ const TodoList = styled.div`
 	width: 580px;
 	height: 600px;
 	margin-top: 44px;
-	animation: ${MoveBox} 1s;
+	animation: ${MoveBox} 0.5s;
 	animation-timing-function: ease-in-out(0.42, 0, 0.58, 1);
 `;
 
@@ -210,7 +230,7 @@ const FlowerList = styled.div`
 	height: 600px;
 	background-color: skyblue;
 	margin-top: 44px;
-	animation: ${MoveBox} 1s;
+	animation: ${MoveBox} 0.5s;
 	animation-timing-function: ease-in-out(0.42, 0, 0.58, 1);
 `;
 
@@ -391,8 +411,79 @@ const CreatedListWrapper = styled.div`
 	margin-top: 20px;
 `;
 
+const NicknameModal = styled.div`
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.35);
+	position: fixed;
+	top: 0;
+	z-index: 1000;
+	& > div {
+		width: 400px;
+		background-color: #fafafa;
+		position: relative;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		border-radius: 16px;
+		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
+	}
+	& > div > div {
+		padding: 20px;
+	}
+	& > div > div > div:nth-child(1) {
+		border-bottom: 4px solid #32a797;
+		width: 170px;
+		margin-bottom: 4px;
+	}
+	& > div > div > div:nth-child(2) {
+		font-size: 1.125rem;
+		font-weight: 500;
+		margin-bottom: 36px;
+	}
+	& > div > div > input {
+		width: calc(100% - 32px);
+		padding: 12px 16px;
+	}
+`;
+
+const ModalBtn = styled.div`
+	margin-top: 36px;
+	display: flex;
+	justify-content: space-between;
+	& > button {
+		color: #404040;
+		font-weight: 400;
+		font-size: 1rem;
+		padding: 0;
+		background-color: transparent;
+	}
+	& > button:nth-child(2) {
+		color: #32a797;
+		font-weight: 400;
+		font-size: 1rem;
+		padding: 0;
+		background-color: transparent;
+	}
+`;
+
+const WarnSpan = styled.span`
+	font-size: 0.875rem;
+	font-weight: 400;
+	color: #ff4500;
+	display: block;
+`;
+
+const SucSpan = styled.span`
+	font-size: 0.875rem;
+	font-weight: 400;
+	color: #32a797;
+	display: block;
+`;
+
 function Personal({ isLogin }) {
 	const [isUser, setIsUser] = useState('');
+	const [userName, setUserName] = useState('');
 	const [selectMenu, setSelectMenu] = useState(0);
 	const [totalList, setTotalList] = useState(0);
 	const [completeList, setcompleteList] = useState(0);
@@ -408,6 +499,12 @@ function Personal({ isLogin }) {
 	const [userList, setUserList] = useState([]);
 	const [isChange, setIsChange] = useState(false);
 	const [userImageName, setUserImageName] = useState('');
+	const [isUserImageName, setIsUserImageName] = useState(false);
+	const [overlapList, setOverlapList] = useState('');
+	const [changedName, setChangedName] = useState('');
+	const [ChangedNameAlert, setChangedNameAlert] = useState(false);
+	const [onNameModal, setOnNameModal] = useState(false);
+	const move = useNavigate();
 	const containerRef = useRef();
 	const selectImage = useRef();
 	const profileImage = useRef();
@@ -427,14 +524,6 @@ function Personal({ isLogin }) {
 			const req = await axios.post('http://localhost:8080/userList', {
 				id: isUser,
 			});
-			const reqq = await axios.post('http://localhost:8080/userprofile', {
-				userid: isUser,
-			});
-			if (reqq.data[0]) {
-				setUserImageName((p) => (p = reqq.data[0].userimage));
-			} else {
-				return;
-			}
 			setTotalList(req.data.length);
 			setUserList(req.data);
 		} catch (error) {
@@ -442,29 +531,65 @@ function Personal({ isLogin }) {
 		}
 	};
 
-	// const selectUserImage = async () => {
-	// 	try {
-	// 		const req = await axios.post('http://localhost:8080/userprofile', {
-	// 			userid: isUser,
-	// 		});
-	// 		setUserImageName((p) => (p = req.data[0].userimage));
-	// 	} catch (error) {
-	// 		console.log(error);
-	// 	}
-	// };
+	const selectUserImage = async () => {
+		try {
+			const req = await axios.post('http://localhost:8080/userprofile', {
+				userid: isUser,
+			});
+			setUserImageName((p) => (p = req.data[0].userimage));
+			console.log(req.data[0].userimage);
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	const selectUser = async () => {
+		try {
+			const req = await axios.post('http://localhost:8080/users', {
+				userid: isUser,
+			});
+			setUserName(req.data[0].usernickname);
+		} catch (error) {
+			console.log(error);
+		}
+	};
 
 	useLayoutEffect(() => {
 		auth();
 	}, []);
 
 	useLayoutEffect(() => {
-		selectList();
-		// selectUserImage();
+		if (isUser) {
+			selectList();
+		} else {
+			return;
+		}
 	}, [isUser, isOpen, createList, isChange]);
+
+	useLayoutEffect(() => {
+		if (isUser) {
+			selectUserImage();
+		} else {
+			return;
+		}
+	}, [isUser, isOpen, createList, isChange, isUserImageName]);
+
+	useLayoutEffect(() => {
+		if (isUser) {
+			selectUser();
+		} else {
+			return;
+		}
+	}, [isUser, onNameModal]);
 
 	useEffect(() => {
 		console.log(`ischange = ${isChange}`);
 	});
+
+	useEffect(() => {
+		const checkOverlap = userList.filter((arr) => arr.Title === title);
+		setOverlapList((p) => (p = checkOverlap));
+	}, [title]);
 
 	//onEvent func 처리
 	const changeMenu = () => {
@@ -473,6 +598,20 @@ function Personal({ isLogin }) {
 
 	const changeMenuReverse = () => {
 		setSelectMenu((p) => (p = 2));
+	};
+
+	const openModal = () => {
+		setOnNameModal((p) => (p = true));
+		setChangedName((p) => (p = ''));
+	};
+
+	const closeModal = () => {
+		setOnNameModal((p) => (p = false));
+	};
+
+	const onChangeName = (e) => {
+		setChangedName((p) => (p = e.target.value));
+		setChangedNameAlert((p) => (p = true));
 	};
 
 	const onWrite = () => {
@@ -490,6 +629,15 @@ function Personal({ isLogin }) {
 
 	const insertContents = (e) => {
 		setContents((p) => (p = e.target.value));
+	};
+
+	const Logout = async () => {
+		try {
+			const req = await axios.get('http://localhost:8080/logout');
+			move('/');
+		} catch (error) {
+			console.log(error);
+		}
 	};
 
 	const insertImg = (e) => {
@@ -514,23 +662,20 @@ function Personal({ isLogin }) {
 
 	const listSubmit = async (e) => {
 		e.preventDefault();
-		if (title.length > 0) {
-			// console.log({ title: title, contents: contents, images: images });
+		if (title.length > 0 && overlapList.length === 0) {
 			const imgData = new FormData();
-			// const imagearr = images.map((image) => image.image);
 			imgData.append('title', title);
 			imgData.append('contents', contents);
 			imgData.append('author', isUser);
 			images.map((image) => imgData.append('img', image.image));
-			// imgData.append('img', imagearr);
 			const req = await axios.post(
 				`http://localhost:8080/userThumbnail`,
 				imgData,
 				{ headers: { 'Content-Type': 'multipart/form-data' } }
 			);
 			cancelSheets();
-		} else {
-			return;
+		} else if (title.length === 0) {
+			setOnTitleChange((p) => (p = true));
 		}
 		// console.log(e.target.files[0]);
 		// console.log(imgData.__proto__);
@@ -563,14 +708,26 @@ function Personal({ isLogin }) {
 		setUserImageName((p) => (p = req.data));
 	};
 
+	const updateUserName = async () => {
+		try {
+			const req = await axios.post(`http://localhost:8080/changeusernickname`, {
+				id: isUser,
+				name: changedName,
+			});
+			setUserName((p) => (p = changedName));
+			closeModal();
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
 	useEffect(() => {
 		setContainerWidth(containerRef.current.offsetWidth);
 	});
 
 	useEffect(() => {
-		// console.log(images);
-		// console.log(loadedImages);
-	}, [images]);
+		console.log(userName);
+	}, [isUser]);
 
 	return (
 		<div>
@@ -589,7 +746,9 @@ function Personal({ isLogin }) {
 							<UserPicture
 								src={
 									userImageName
-										? `http://localhost:8080/${isUser}/profile/${userImageName}`
+										? userImageName === 'person96'
+											? person96
+											: `http://localhost:8080/${isUser}/profile/${userImageName}`
 										: null
 								}
 								alt=''
@@ -610,10 +769,16 @@ function Personal({ isLogin }) {
 						<div>
 							<span>{isUser}</span>님, 환영합니다!
 						</div>
+						<div>
+							<span onClick={openModal}>닉네임변경</span>
+							<div></div>
+							<span>SNS연동관리</span>
+							<div></div>
+							<span onClick={Logout}>로그아웃</span>
+						</div>
 					</UserProfile>
 					<BoardMenu>
 						<div>
-							<TodoListBar isSelect={selectMenu}></TodoListBar>
 							<TodoListBtn
 								isSelect={selectMenu}
 								onClick={changeMenu}
@@ -621,9 +786,9 @@ function Personal({ isLogin }) {
 							>
 								나의 버킷리스트
 							</TodoListBtn>
+							<TodoListBar isSelect={selectMenu}></TodoListBar>
 						</div>
 						<div>
-							<FlowerListBar isSelect={selectMenu}></FlowerListBar>
 							<FlowerListBtn
 								isSelect={selectMenu}
 								onClick={changeMenuReverse}
@@ -663,6 +828,7 @@ function Personal({ isLogin }) {
 											list={list}
 											userId={isUser}
 											isOpen={createList}
+											isCompleted={list.isCompleted}
 											key={index}
 										></UserPost>
 								  ))
@@ -690,6 +856,7 @@ function Personal({ isLogin }) {
 											key={index}
 											index={index}
 											list={list}
+											fullList={userList}
 											userId={isUser}
 											isOpen={createList}
 											setIsChange={setIsChange}
@@ -711,9 +878,13 @@ function Personal({ isLogin }) {
 										placeholder='100자 이내'
 									/>
 									{onTitleChange ? (
-										title.length < 1 ? (
+										title.length > 0 ? (
+											overlapList.length === 0 ? null : (
+												<span>겹치는 버킷리스트가 있어요</span>
+											)
+										) : (
 											<span>제목 줘</span>
-										) : null
+										)
 									) : null}
 								</div>
 								<div>
@@ -777,6 +948,37 @@ function Personal({ isLogin }) {
 						)}
 					</div>
 				</CreateContainer>
+			) : null}
+			{onNameModal ? (
+				<NicknameModal>
+					<div>
+						<div>
+							<div></div>
+							<div>새로운 닉네임을 입력해주세요</div>
+							<input
+								onChange={onChangeName}
+								value={changedName}
+								type='text'
+								placeholder='10자 이내의 한글, 영문, 숫자'
+							/>
+							{ChangedNameAlert ? (
+								changedName.length < 1 ? (
+									<WarnSpan>닉네임을 입력해주세요</WarnSpan>
+								) : changedName.length > 10 ? (
+									<WarnSpan>닉네임은 10자 이하만 입력 가능합니다.</WarnSpan>
+								) : changedName === userName ? (
+									<WarnSpan>변경전과 같은 닉네임 입니다.</WarnSpan>
+								) : (
+									<SucSpan>사용가능한 닉네임 입니다.</SucSpan>
+								)
+							) : null}
+							<ModalBtn>
+								<button onClick={closeModal}>취소</button>
+								<button onClick={updateUserName}>확인</button>
+							</ModalBtn>
+						</div>
+					</div>
+				</NicknameModal>
 			) : null}
 		</div>
 	);
