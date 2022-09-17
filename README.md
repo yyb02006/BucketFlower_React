@@ -1,70 +1,33 @@
-# Getting Started with Create React App
+# BuketFlower_Client
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+버킷플라워 프로젝트는 사용자가 평소에 하고싶거나 도전해보고 싶었던 버킷리스트를 기록하고
+달성에 대한 보상으로 여러 종류의 꽃을 받아 자신만의 식물을 가질 수 있게 만드는 프로젝트 입니다.
 
-## Available Scripts
+## issues
 
-In the project directory, you can run:
+사용자가 보상으로 받은 꽃들을 '나의 버킷플라워 메뉴'에 저장되고, 이 보상들을 컨테이너에 넣어 꾸밀 수 있는 기능필요.
 
-### `npm start`
+컨테이너와 같은 페이지에 있는 '나의 버킷플라워 메뉴'에서 드래그앤드랍으로 꽃들을 컨테이너 위에 놓을 수 있는 것까지 구현.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+이후 로그인시에도 사용자가 자신이 이동시킨 위치에서 똑같은 꽃들을 볼 수 있게 하려면 컨테이너 안으로 이동시킨 꽃들의 위치값을 저장해서 사용자가 재접속 후 버킷플라워 메뉴로 이동할 시에도 같은 위치에 같은 꽃들을 다시 렌더링 되게 구현해야함.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+브라우저 전체에서 꽃 하나하나가 가지고 있는 절대적인 위치를 저장하는 방식은 브라우저 크기 변화에 대응을 할 수 없는 문제가 있음.
 
-### `npm test`
+'버킷플라워 컨테이너'에 상대적인 위치를 정하는 것으로 해결할 수 있으나 마크업구조상 '나의 버킷플라워 메뉴'는 '버킷플라워 컨테이너'에 자식태그로 들어가있지 않고, 버킷플라워 메뉴를 컨테이너 하위로 옮기는 형태로 마크업 하기에도 어려움이 있음.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+useRef Hook으로 컨테이너가 가진 left값을 가져와서 사용자가 컨테이너 위에 꽃을 놓는 순간의 마우스x,y값에서 빼주면 꽃이 컨테이너를 기준으로 어디있냐 하는 위치값을 알 수 있게 됨. 이 위치값을 db에 저장한 후에 사용자가 개인 페이지로 접속할 때마다 해당 위치에 꽃을 렌더링 해주면 사용자가 컨테이너 위로 옮긴 꽃을 이후에도 같은 위치에서 보여줄 수 있음.
 
-### `npm run build`
+하지만 근본적으로, 추후 사용자가 꾸민 버킷플라워를 이미지로 추출 해야할 상황과 사용자가 꽃을 컨테이너 위로 옮긴 이후에도 '나의 버킷플라워 메뉴'에서는 사용자가 보유한 꽃을 계속해서 보여줄 수 있어야 함.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+결국 컨테이너 태그 하위에 꽃 이미지들을 배치하는 것이 가장 좋은데, 이것은 사용자가 놓은 꽃의 위치값과 id, 파일이름을 배열로 받아서 db에 저장하고 사용자가 개인페이지에 접속할 때 위치값과 id, 파일이름을 매치시켜 꽃의 이미지를 한 번 더 렌더링 하는 로직을 통해 구현해야함.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+'나의 버킷플라워 메뉴'의 사용자가 가진 꽃들이 map메서드로 구현되어 있기때문에 배열방식으로 처리되는 것을 고려해야함.
+사용자가 같은 파일이름을 가진 같은 꽃을 여러개 가지고 있는 상황이라면 컨테이너 위에 있는 같은 이미지의 꽃들이 서로 다른 꽃임을 어떻게 구분할지도 고민해야함. (아마도 배열에 id값을 주는 방식으로? map의 index값은 꽃이 삭제되거나 하는 수정상황에서 변하게 되니 사용할 수 없을 것 같다.)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+'나의 버킷플라워 메뉴'에서 '버킷플라워 컨테이너'로 꽃을 드래그앤드롭할 때 onDrop이나 onDragEnd이벤트 핸들러의 위치값을 받아서 배열에 저장해놓았다가 사용자가 '저장하기'버튼을 클릭했을 때 db로 위치값, id, 파일이름, userid를 INSERT 하고 이 값들을 다시 불러와서 '버킷플라워 컨테이너'의 하위 엘리먼트로 만든다.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+'나의 버킷플라워 메뉴'를 map으로 만들때 db에서 받아온 배열 중 index가 일치하는 것이 있으면 opacity를 낮춰서 이미 사용된 꽃임을 알린다.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+컨테이너 위에 있는 꽃을 삭제하고 '나의 버킷플라워 메뉴'로 되돌릴 수 있는 기능도 구현 필요.

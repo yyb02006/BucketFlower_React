@@ -46,12 +46,29 @@ const MoveBox = keyframes`
 	}
 `;
 
+const slide = (current, after) => keyframes`
+	0%{
+		transform: translateY(${current});
+	}
+	100%{
+		transform: translateY(${after});
+	}
+`;
+
 const moveMenu = () => css`
 	animation: ${moveMenuFrames()} 0.2s linear forwards;
 `;
 
 const moveMenuReverse = () => css`
 	animation: ${moveMenuBar} 0.2s linear forwards;
+`;
+
+const BackgroundWrapper = styled.div`
+	width: 100vw;
+	min-height: 920px;
+	height: 100%;
+	position: absolute;
+	overflow: hidden;
 `;
 
 const PersonalWrapper = styled.div`
@@ -64,15 +81,25 @@ const PersonalWrapper = styled.div`
 
 const FlowerContainer = styled.div`
 	min-width: 580px;
-	/* height: ${(props) => (props.width * 900) / 580}px; */
+	max-height: 1000px;
+	min-height: 900px;
+	position: relative;
+	margin-left: 10px;
+	top: -10px;
+`;
+
+const FlowerInner = styled.div`
+	min-width: 580px;
 	max-height: 1000px;
 	min-height: 900px;
 	border-radius: 0 0 16px 16px;
 	filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
 	background-color: #fafafa;
-	position: relative;
-	margin-left: 10px;
-	top: -10px;
+`;
+
+const FlowerImgBox = styled.div`
+	min-height: 900px;
+	max-height: 1000px;
 `;
 
 const InnerLogo = styled.div`
@@ -81,15 +108,41 @@ const InnerLogo = styled.div`
 	height: 120px;
 	display: flex;
 	align-items: center;
+	position: absolute;
+	top: 0;
 	/* background-color: brown; */
 `;
 
 const Logo = styled.img``;
 
+const Adornment = styled.button`
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	margin: 16px;
+	padding: 0;
+	color: #404040;
+	background-color: transparent;
+	font-size: 1rem;
+	font-weight: 400;
+`;
+
 const UserBoard = styled.div`
 	margin-left: 20px;
 	width: 580px;
 	padding-top: 36px;
+	position: relative;
+	animation-duration: 0.3s;
+	animation-timing-function: ease-in-out;
+	animation-fill-mode: forwards;
+	${(props) =>
+		props.top
+			? css`
+					animation-name: ${slide(0, '-324px')};
+			  `
+			: css`
+					animation-name: ${slide('-324px', 0)};
+			  `}
 `;
 
 const UserProfile = styled.div`
@@ -227,7 +280,6 @@ const SeparateBar = styled.div`
 
 const FlowerList = styled.div`
 	width: 580px;
-	height: 600px;
 	margin-top: 44px;
 	animation: ${MoveBox} 0.5s;
 	animation-timing-function: ease-in-out(0.42, 0, 0.58, 1);
@@ -245,6 +297,9 @@ const BranchWrapper = styled.div`
 	justify-content: center;
 	align-items: center;
 	border-radius: 8px;
+	& > img {
+		position: absolute;
+	}
 `;
 
 const WriteButton = styled.input`
@@ -518,10 +573,17 @@ function Personal({ isLogin }) {
 	const [ChangedNameAlert, setChangedNameAlert] = useState(false);
 	const [onNameModal, setOnNameModal] = useState(false);
 	const [rewards, setRewards] = useState([]);
+	const [adornment, setAdornment] = useState(false);
+	const [dropedRewards, setDropedRewards] = useState([]);
 	const move = useNavigate();
 	const containerRef = useRef();
 	const selectImage = useRef();
 	const profileImage = useRef();
+	const rewardsRef = useRef([]);
+	let clientX,
+		clientY,
+		originalX,
+		originalY = 0;
 
 	const auth = async () => {
 		try {
@@ -575,6 +637,17 @@ function Personal({ isLogin }) {
 			});
 			setRewards(req.data);
 			console.log(req.data);
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	const submitDisplayed = async () => {
+		try {
+			const req = await axios.post('http://localhost:8080/submitdisplayed', {
+				displayed: dropedRewards,
+				userid: isUser,
+			});
 		} catch (error) {
 			console.log(error);
 		}
@@ -672,6 +745,68 @@ function Personal({ isLogin }) {
 		}
 	};
 
+	const onAdornment = () => {
+		if (adornment === false) {
+			setSelectMenu((p) => (p = 2));
+		} else if (adornment === true) {
+			submitDisplayed();
+			setSelectMenu((p) => (p = 1));
+		}
+		setAdornment((p) => !p);
+	};
+
+	const dragStartHandler = (e) => {
+		clientX = e.clientX;
+		clientY = e.clientY;
+		originalX = e.target.offsetLeft;
+		originalY = e.target.offsetTop;
+	};
+
+	const dragHandler = (e) => {
+		e.target.style.left = `${e.target.offsetLeft + e.clientX - clientX}px`;
+		e.target.style.top = `${e.target.offsetTop + e.clientY - clientY}px`;
+		clientX = e.clientX;
+		clientY = e.clientY;
+	};
+
+	const dragEndHandler = (e, index, info) => {
+		const clientLeft = rewardsRef.current[index].getBoundingClientRect().left;
+		const clientTop = rewardsRef.current[index].getBoundingClientRect().top;
+		const clientRight = rewardsRef.current[index].getBoundingClientRect().right;
+		const clientBottom =
+			rewardsRef.current[index].getBoundingClientRect().bottom;
+		const boxLeft = containerRef.current.getBoundingClientRect().left;
+		const boxTop = containerRef.current.getBoundingClientRect().top;
+		const boxRight = containerRef.current.getBoundingClientRect().right;
+		const boxBottom = containerRef.current.getBoundingClientRect().bottom;
+		let newDroped = [...dropedRewards];
+		newDroped[index] = {
+			key: info.key,
+			userid: info.userid,
+			filename: info.filename,
+			posx: e.clientX + clientLeft - boxLeft,
+			posy: e.clientY + clientTop - boxTop,
+		};
+		if (
+			e.clientX + clientLeft > boxLeft &&
+			e.clientX + clientRight < boxRight &&
+			e.clientY + clientTop > boxTop &&
+			e.clientY + clientBottom < boxBottom
+		) {
+			e.target.style.left = `${e.target.offsetLeft + e.clientX - clientX}px`;
+			e.target.style.top = `${e.target.offsetTop + e.clientY - clientY}px`;
+			setDropedRewards((p) => (p = newDroped));
+		} else {
+			e.target.style.left = `${originalX}px`;
+			e.target.style.top = `${originalY}px`;
+		}
+	};
+
+	const dragLeaveHandler = (e) => {
+		e.preventDefault();
+		console.log('hihi');
+	};
+
 	const insertImg = (e) => {
 		const img = e.target.files[0];
 		const fileReader = new FileReader();
@@ -762,17 +897,27 @@ function Personal({ isLogin }) {
 	}, [isUser]);
 
 	return (
-		<div>
+		<BackgroundWrapper>
 			<Background />
 			<PersonalWrapper>
-				<FlowerContainer ref={containerRef} width={containerWidth}>
-					<InnerLogo>
-						<Link to='/userhome'>
-							<Logo src={logo} alt='' />
-						</Link>
-					</InnerLogo>
+				<FlowerContainer
+					ref={containerRef}
+					width={containerWidth}
+					onDragLeave={(e) => dragLeaveHandler(e)}
+				>
+					<FlowerInner>
+						<FlowerImgBox></FlowerImgBox>
+						<InnerLogo>
+							<Link to='/userhome'>
+								<Logo src={logo} alt='' />
+							</Link>
+						</InnerLogo>
+						<Adornment onClick={onAdornment}>
+							{adornment ? '그만꾸미기' : '꾸미기'}
+						</Adornment>
+					</FlowerInner>
 				</FlowerContainer>
-				<UserBoard>
+				<UserBoard top={adornment}>
 					<UserProfile>
 						<UserPictureWrapper>
 							<UserPicture
@@ -829,15 +974,6 @@ function Personal({ isLogin }) {
 								나의 버킷플라워
 							</FlowerListBtn>
 						</div>
-						{createList ? null : (
-							<WriteButtonWrapper>
-								<WriteButton
-									type='image'
-									src={write}
-									onClick={onWrite}
-								></WriteButton>
-							</WriteButtonWrapper>
-						)}
 					</BoardMenu>
 					{selectMenu < 2 ? (
 						<TodoList>
@@ -870,17 +1006,37 @@ function Personal({ isLogin }) {
 						<FlowerList>
 							{rewards
 								.filter((arr) => arr.theme === 'branch')
-								.map((arr) => (
+								.map((arr, index) => (
 									<BranchWrapper key={arr.id}>
 										<img
 											src={`http://localhost:8080/images/${arr.filename}.svg`}
 											alt=''
+											draggable={adornment ? true : false}
+											onDragStart={(e) => dragStartHandler(e)}
+											onDrag={(e) => dragHandler(e)}
+											onDragEnd={(e) =>
+												dragEndHandler(e, index, {
+													key: arr.id,
+													userid: arr.userid,
+													filename: arr.filename,
+												})
+											}
+											ref={(el) => (rewardsRef.current[index] = el)}
 										/>
 									</BranchWrapper>
 								))}
 						</FlowerList>
 					)}
 				</UserBoard>
+				{createList ? null : (
+					<WriteButtonWrapper>
+						<WriteButton
+							type='image'
+							src={write}
+							onClick={onWrite}
+						></WriteButton>
+					</WriteButtonWrapper>
+				)}
 			</PersonalWrapper>
 			{createList ? (
 				<CreateContainer>
@@ -1023,7 +1179,7 @@ function Personal({ isLogin }) {
 					</div>
 				</NicknameModal>
 			) : null}
-		</div>
+		</BackgroundWrapper>
 	);
 }
 
