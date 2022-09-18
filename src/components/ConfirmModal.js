@@ -26,7 +26,7 @@ const ModalContainer = styled.div`
 	box-sizing: border-box;
 	width: 400px;
 	background-color: #fafafa;
-	position: absolute;
+	position: fixed;
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
@@ -108,24 +108,22 @@ function ConfirmModal({
 
 	if (!animation && !visible) return null;
 	return (
-		<>
-			<ModalContainer width={titleBarWidth} animation={animation}>
-				<div></div>
-				<div>{title}</div>
-				<div>
-					{content.split('\\n').map((arr, index) => (
-						<span key={index}>
-							{arr}
-							<br />
-						</span>
-					))}
-				</div>
-				<ModalButtons>
-					<CancelButton onClick={onCancel}>{cancelText}</CancelButton>
-					<ConfirmButton onClick={onConfirm}>{confirmText}</ConfirmButton>
-				</ModalButtons>
-			</ModalContainer>
-		</>
+		<ModalContainer width={titleBarWidth} animation={animation}>
+			<div></div>
+			<div>{title}</div>
+			<div>
+				{content.split('\\n').map((arr, index) => (
+					<span key={index}>
+						{arr}
+						<br />
+					</span>
+				))}
+			</div>
+			<ModalButtons>
+				<CancelButton onClick={onCancel}>{cancelText}</CancelButton>
+				<ConfirmButton onClick={onConfirm}>{confirmText}</ConfirmButton>
+			</ModalButtons>
+		</ModalContainer>
 	);
 }
 

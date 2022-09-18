@@ -95,11 +95,18 @@ const FlowerInner = styled.div`
 	border-radius: 0 0 16px 16px;
 	filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
 	background-color: #fafafa;
+	position: relative;
 `;
 
 const FlowerImgBox = styled.div`
-	min-height: 900px;
 	max-height: 1000px;
+	min-height: 900px;
+`;
+
+const DisplayedImg = styled.img`
+	position: absolute;
+	left: ${(props) => props.left};
+	top: ${(props) => props.top};
 `;
 
 const InnerLogo = styled.div`
@@ -134,11 +141,11 @@ const UserBoard = styled.div`
 	position: relative;
 	animation-duration: 0.3s;
 	animation-timing-function: ease-in-out;
-	animation-fill-mode: forwards;
 	${(props) =>
 		props.top
 			? css`
 					animation-name: ${slide(0, '-324px')};
+					animation-fill-mode: forwards;
 			  `
 			: css`
 					animation-name: ${slide('-324px', 0)};
@@ -284,6 +291,10 @@ const FlowerList = styled.div`
 	animation: ${MoveBox} 0.5s;
 	animation-timing-function: ease-in-out(0.42, 0, 0.58, 1);
 	display: flex;
+	flex-wrap: wrap;
+	& > div {
+		margin-bottom: 6px;
+	}
 	& > div:not(:nth-child(4n)) {
 		margin-right: 6px;
 	}
@@ -297,9 +308,29 @@ const BranchWrapper = styled.div`
 	justify-content: center;
 	align-items: center;
 	border-radius: 8px;
-	& > img {
-		position: absolute;
-	}
+	${(props) =>
+		props.isSelected
+			? css`
+					background-color: #65e8c4;
+			  `
+			: null}
+`;
+
+const Rewards = styled.img`
+	position: absolute;
+	${(props) =>
+		props.used
+			? css`
+					opacity: 40%;
+			  `
+			: css`
+					cursor: pointer;
+			  `}
+`;
+
+const RewardsShadow = styled.img`
+	position: absolute;
+	opacity: 40%;
 `;
 
 const WriteButton = styled.input`
@@ -549,6 +580,15 @@ const SucSpan = styled.span`
 	display: block;
 `;
 
+const Test = styled.div`
+	position: fixed;
+	width: 500px;
+	height: 500px;
+	background-color: crimson;
+	top: 0;
+	left: 0;
+`;
+
 function Personal({ isLogin }) {
 	const [isUser, setIsUser] = useState('');
 	const [userName, setUserName] = useState('');
@@ -573,17 +613,27 @@ function Personal({ isLogin }) {
 	const [ChangedNameAlert, setChangedNameAlert] = useState(false);
 	const [onNameModal, setOnNameModal] = useState(false);
 	const [rewards, setRewards] = useState([]);
+	const [rewardsStat, setRewardsStat] = useState([]);
 	const [adornment, setAdornment] = useState(false);
 	const [dropedRewards, setDropedRewards] = useState([]);
+	const [dropedLocation, setDropedLocation] = useState({
+		clientX: 0,
+		clientY: 0,
+		originalX: 0,
+		originalY: 0,
+	});
+	const [displayed, setDisplayed] = useState([]);
 	const move = useNavigate();
 	const containerRef = useRef();
 	const selectImage = useRef();
 	const profileImage = useRef();
 	const rewardsRef = useRef([]);
-	let clientX,
-		clientY,
-		originalX,
-		originalY = 0;
+	const displayedRef = useRef([]);
+	// let clientX = 0;
+	// let clientY = 0;
+	// let originalX = 0;
+	// let originalY = 0;
+	let rewardsStatArr = [...rewardsStat];
 
 	const auth = async () => {
 		try {
@@ -613,7 +663,6 @@ function Personal({ isLogin }) {
 				userid: isUser,
 			});
 			setUserImageName((p) => (p = req.data[0].userimage));
-			console.log(req.data[0].userimage);
 		} catch (error) {
 			console.log(error);
 		}
@@ -636,7 +685,6 @@ function Personal({ isLogin }) {
 				userid: isUser,
 			});
 			setRewards(req.data);
-			console.log(req.data);
 		} catch (error) {
 			console.log(error);
 		}
@@ -648,6 +696,18 @@ function Personal({ isLogin }) {
 				displayed: dropedRewards,
 				userid: isUser,
 			});
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	const loadDisplayed = async () => {
+		try {
+			const req = await axios.post('http://localhost:8080/loaddisplayed', {
+				userid: isUser,
+			});
+			setDisplayed((p) => (p = req.data));
+			console.log(req.data);
 		} catch (error) {
 			console.log(error);
 		}
@@ -681,9 +741,11 @@ function Personal({ isLogin }) {
 		}
 	}, [isUser, onNameModal]);
 
-	useEffect(() => {
-		console.log(`ischange = ${isChange}`);
-	});
+	useLayoutEffect(() => {
+		if (isUser) {
+			loadDisplayed();
+		}
+	}, [isUser, adornment]);
 
 	useEffect(() => {
 		const checkOverlap = userList.filter((arr) => arr.Title === title);
@@ -755,26 +817,41 @@ function Personal({ isLogin }) {
 		setAdornment((p) => !p);
 	};
 
-	const dragStartHandler = (e) => {
-		clientX = e.clientX;
-		clientY = e.clientY;
-		originalX = e.target.offsetLeft;
-		originalY = e.target.offsetTop;
+	const dragStartHandler = (e, key, isReward) => {
+		setDropedLocation({
+			clientX: e.clientX,
+			clientY: e.clientY,
+			originalX: e.target.offsetLeft,
+			originalY: e.target.offsetTop,
+		});
+		if (isReward) {
+			rewardsStatArr[key - 1] = { isSelected: true };
+			setRewardsStat((p) => (p = rewardsStatArr));
+		}
 	};
 
 	const dragHandler = (e) => {
-		e.target.style.left = `${e.target.offsetLeft + e.clientX - clientX}px`;
-		e.target.style.top = `${e.target.offsetTop + e.clientY - clientY}px`;
-		clientX = e.clientX;
-		clientY = e.clientY;
+		e.target.style.left = `${
+			e.target.offsetLeft + e.clientX - dropedLocation.clientX
+		}px`;
+		e.target.style.top = `${
+			e.target.offsetTop + e.clientY - dropedLocation.clientY
+		}px`;
+		let prevArr = dropedLocation;
+		prevArr.clientX = e.clientX;
+		prevArr.clientY = e.clientY;
+		setDropedLocation((p) => (p = prevArr));
 	};
 
-	const dragEndHandler = (e, index, info) => {
-		const clientLeft = rewardsRef.current[index].getBoundingClientRect().left;
-		const clientTop = rewardsRef.current[index].getBoundingClientRect().top;
-		const clientRight = rewardsRef.current[index].getBoundingClientRect().right;
-		const clientBottom =
-			rewardsRef.current[index].getBoundingClientRect().bottom;
+	const dragEndHandler = (e, index, ref, isReward, info) => {
+		if (isReward) {
+			rewardsStatArr[info.key - 1] = { isSelected: false };
+			setRewardsStat((p) => (p = rewardsStatArr));
+		}
+		const clientLeft = ref.getBoundingClientRect().left;
+		const clientTop = ref.getBoundingClientRect().top;
+		const clientRight = ref.getBoundingClientRect().right;
+		const clientBottom = ref.getBoundingClientRect().bottom;
 		const boxLeft = containerRef.current.getBoundingClientRect().left;
 		const boxTop = containerRef.current.getBoundingClientRect().top;
 		const boxRight = containerRef.current.getBoundingClientRect().right;
@@ -793,12 +870,17 @@ function Personal({ isLogin }) {
 			e.clientY + clientTop > boxTop &&
 			e.clientY + clientBottom < boxBottom
 		) {
-			e.target.style.left = `${e.target.offsetLeft + e.clientX - clientX}px`;
-			e.target.style.top = `${e.target.offsetTop + e.clientY - clientY}px`;
+			e.target.style.left = `${
+				e.target.offsetLeft + e.clientX - dropedLocation.clientX
+			}px`;
+			e.target.style.top = `${
+				e.target.offsetTop + e.clientY - dropedLocation.clientY
+			}px`;
 			setDropedRewards((p) => (p = newDroped));
 		} else {
-			e.target.style.left = `${originalX}px`;
-			e.target.style.top = `${originalY}px`;
+			console.log(dropedLocation.originalX, dropedLocation.originalY);
+			e.target.style.left = `${dropedLocation.originalX}px`;
+			e.target.style.top = `${dropedLocation.originalY}px`;
 		}
 	};
 
@@ -893,8 +975,8 @@ function Personal({ isLogin }) {
 	});
 
 	useEffect(() => {
-		console.log(userName);
-	}, [isUser]);
+		console.log(rewardsStat);
+	}, [rewardsStat]);
 
 	return (
 		<BackgroundWrapper>
@@ -906,7 +988,39 @@ function Personal({ isLogin }) {
 					onDragLeave={(e) => dragLeaveHandler(e)}
 				>
 					<FlowerInner>
-						<FlowerImgBox></FlowerImgBox>
+						<FlowerImgBox>
+							{displayed.map((arr, index) => (
+								<div>
+									<DisplayedImg
+										key={arr.id}
+										src={`http://localhost:8080/images/${arr.filename}.svg`}
+										alt=''
+										left={`${arr.posx}px`}
+										top={`${arr.posy}px`}
+										draggable={adornment ? true : false}
+										onDragStart={(e) =>
+											dragStartHandler(e, arr.imagekey, false)
+										}
+										onDrag={(e) => dragHandler(e)}
+										onDragEnd={(e) =>
+											dragEndHandler(
+												e,
+												index,
+												displayedRef.current[index],
+												false,
+												{
+													key: arr.imagekey,
+													userid: arr.userid,
+													filename: arr.filename,
+												}
+											)
+										}
+										ref={(el) => (displayedRef.current[index] = el)}
+									/>
+									{adornment ? <img src={deleteIcon} alt='' /> : null}
+								</div>
+							))}
+						</FlowerImgBox>
 						<InnerLogo>
 							<Link to='/userhome'>
 								<Logo src={logo} alt='' />
@@ -1007,19 +1121,57 @@ function Personal({ isLogin }) {
 							{rewards
 								.filter((arr) => arr.theme === 'branch')
 								.map((arr, index) => (
-									<BranchWrapper key={arr.id}>
-										<img
+									<BranchWrapper
+										key={arr.id}
+										isSelected={
+											rewardsStat[arr.id - 1]
+												? rewardsStat[arr.id - 1].isSelected
+												: false
+										}
+									>
+										{rewardsStat[arr.id - 1] ? (
+											rewardsStat[arr.id - 1].isSelected ? (
+												<RewardsShadow
+													src={`http://localhost:8080/images/${arr.filename}.svg`}
+													alt=''
+												></RewardsShadow>
+											) : null
+										) : null}
+										<Rewards
 											src={`http://localhost:8080/images/${arr.filename}.svg`}
 											alt=''
-											draggable={adornment ? true : false}
-											onDragStart={(e) => dragStartHandler(e)}
+											draggable={
+												adornment
+													? !displayed
+															.map((keys) => keys.imagekey)
+															.includes(arr.id)
+														? true
+														: false
+													: false
+											}
+											onDragStart={(e) => dragStartHandler(e, arr.id, true)}
 											onDrag={(e) => dragHandler(e)}
 											onDragEnd={(e) =>
-												dragEndHandler(e, index, {
-													key: arr.id,
-													userid: arr.userid,
-													filename: arr.filename,
-												})
+												dragEndHandler(
+													e,
+													index,
+													rewardsRef.current[index],
+													true,
+													{
+														key: arr.id,
+														userid: arr.userid,
+														filename: arr.filename,
+													}
+												)
+											}
+											used={
+												adornment
+													? displayed
+															.map((keys) => keys.imagekey)
+															.includes(arr.id)
+														? true
+														: false
+													: false
 											}
 											ref={(el) => (rewardsRef.current[index] = el)}
 										/>
