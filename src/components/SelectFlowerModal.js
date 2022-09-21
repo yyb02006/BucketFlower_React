@@ -359,7 +359,12 @@ function SelectFlowerModal({ onModal, onCancel, userId }) {
 							{flowers
 								.filter((arr) => arr.theme === 'purple')
 								.map((arr) => (
-									<BranchesWrapper key={arr.id}>
+									<BranchesWrapper
+										key={arr.id}
+										onClick={() =>
+											selectReward(arr.filename, arr.category, arr.theme)
+										}
+									>
 										<img
 											src={`http://localhost:8080/images/${arr.filename}.svg`}
 											alt=''

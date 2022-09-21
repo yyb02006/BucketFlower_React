@@ -94,6 +94,7 @@ const UserPost = function ({ index, list, userId, isOpen, isCompleted }) {
 	const [animation, setAnimation] = useState(false);
 	const [visible, setVisible] = useState(onCompleteModal);
 	const [complete, setComplete] = useState(false);
+
 	const showPost = () => {
 		setPost((p) => (p = true));
 	};
