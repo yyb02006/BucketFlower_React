@@ -316,7 +316,7 @@ const FlowerListContainer = styled.div`
 			: css`
 					height: 520px;
 			  `};
-	overflow: overlay;
+	overflow-y: overlay;
 	position: relative;
 `;
 
@@ -704,8 +704,6 @@ function Personal({ isLogin }) {
 	let uclientY = 0;
 	let prevArr = dropedLocation;
 
-	console.log(dropedRewards);
-
 	const auth = async () => {
 		try {
 			const req = await axiosInstance.get('http://localhost:8080/authtoken');
@@ -920,6 +918,7 @@ function Personal({ isLogin }) {
 			rewardsStatArr[key - 1] = { isSelected: true };
 			setRewardsStat((p) => (p = rewardsStatArr));
 		}
+		console.log(rewardsRef);
 	};
 
 	const dragHandler = (e) => {
@@ -939,6 +938,9 @@ function Personal({ isLogin }) {
 			top: e.target.offsetTop + e.clientY - dropedLocation.clientY,
 		};
 		setDropedStyles((p) => (p = targetStyles));
+		// console.log(
+		// 	rewards.filter((arr) => arr.theme === 'branch').map((arr, index) => arr)
+		// );
 	};
 
 	const dropHandler = (e) => {
@@ -958,6 +960,7 @@ function Personal({ isLogin }) {
 		const boxTop = containerRef.current.getBoundingClientRect().top;
 		const boxRight = containerRef.current.getBoundingClientRect().right;
 		const boxBottom = containerRef.current.getBoundingClientRect().bottom;
+		console.log(displayedRef);
 		newDroped[index] = {
 			imagekey: info.key,
 			userid: info.userid,
@@ -965,7 +968,7 @@ function Personal({ isLogin }) {
 			posx: e.clientX + clientLeft - boxLeft,
 			posy: e.clientY + clientTop - boxTop,
 		};
-		// console.log(e.target.offsetLeft + e.clientX - dropedLocation.clientX);
+		console.log(clientRight);
 		if (
 			e.clientX + clientLeft > boxLeft &&
 			e.clientX + clientRight < boxRight &&
@@ -979,6 +982,7 @@ function Personal({ isLogin }) {
 				e.target.offsetTop + e.clientY - dropedLocation.clientY
 			}px`;
 			setDropedRewards((p) => (p = newDroped));
+			console.log(dropedRewards);
 			// if (isReward) {
 			// 	rewardsStatArr[info.key - 1] = { isInDropBox: true };
 			// 	setRewardsStat((p) => (p = rewardsStatArr));
@@ -994,6 +998,7 @@ function Personal({ isLogin }) {
 	};
 
 	const resetDroped = (index) => {
+		console.log(index);
 		rewardsRef.current[index].style.left = 'auto';
 		rewardsRef.current[index].style.top = 'auto';
 		let reset = dropedRewards;
@@ -1130,7 +1135,7 @@ function Personal({ isLogin }) {
 										dragEndHandler(
 											e,
 											arr.id - 1,
-											rewardsRef.current[index],
+											rewardsRef.current[arr.id - 1],
 											true,
 											{
 												key: arr.id,
@@ -1158,7 +1163,7 @@ function Personal({ isLogin }) {
 												: false
 											: false
 									}
-									ref={(el) => (rewardsRef.current[index] = el)}
+									ref={(el) => (rewardsRef.current[arr.id - 1] = el)}
 								>
 									<Rewards
 										src={`http://localhost:8080/images/${arr.filename}.svg`}
@@ -1328,99 +1333,97 @@ function Personal({ isLogin }) {
 								: null}
 						</TodoList>
 					) : (
-						<FlowerListContainer height={adornment}>
-							<FlowerList>
-								<Theme>{themes.branch}</Theme>
-								<div>
-									{rewards
-										.filter((arr) => arr.theme === 'branch')
-										.map((arr, index) => (
-											<BranchWrapper
-												key={arr.id}
-												isSelected={
-													rewardsStat[arr.id - 1]
-														? rewardsStat[arr.id - 1].isSelected
-														: false
-												}
-											>
-												{rewardsStat[arr.id - 1] ? (
-													rewardsStat[arr.id - 1].isSelected ? (
-														<RewardsShadow
-															src={`http://localhost:8080/images/${arr.filename}.svg`}
-															alt=''
-														></RewardsShadow>
-													) : null
-												) : null}
-												<RewardsBox
-													draggable={
-														adornment
-															? !displayed
-																	.map((keys) => keys.key)
-																	.includes(arr.id)
-																? true
-																: false
-															: false
-													}
-													onDragStart={(e) => dragStartHandler(e, arr.id, true)}
-													onDrag={(e) => dragHandler(e)}
-													onDragEnd={(e) =>
-														dragEndHandler(
-															e,
-															arr.id - 1,
-															rewardsRef.current[index],
-															true,
-															{
-																key: arr.id,
-																userid: arr.userid,
-																filename: arr.filename,
-															}
-														)
-													}
-													onDrop={(e) => dropHandler(e)}
-													onDragOver={() => false}
-													used={
-														adornment
-															? displayed
-																	.map((keys) => keys.imagekey)
-																	.includes(arr.id)
-																? true
-																: false
-															: false
-													}
-													droped={
-														adornment
-															? dropedRewards
-																	.filter((array) => !array === false)
-																	.map((keys) => keys.imagekey)
-																	.includes(arr.id)
-																? rewardsStat[arr.id - 1]
-																	? true
-																	: false
-																: false
-															: false
-													}
-													ref={(el) => (rewardsRef.current[index] = el)}
-												>
-													<Rewards
+						<FlowerList>
+							<Theme>{themes.branch}</Theme>
+							<div>
+								{rewards
+									.filter((arr) => arr.theme === 'branch')
+									.map((arr, index) => (
+										<BranchWrapper
+											key={arr.id}
+											isSelected={
+												rewardsStat[arr.id - 1]
+													? rewardsStat[arr.id - 1].isSelected
+													: false
+											}
+										>
+											{rewardsStat[arr.id - 1] ? (
+												rewardsStat[arr.id - 1].isSelected ? (
+													<RewardsShadow
 														src={`http://localhost:8080/images/${arr.filename}.svg`}
 														alt=''
+													></RewardsShadow>
+												) : null
+											) : null}
+											<RewardsBox
+												draggable={
+													adornment
+														? !displayed
+																.map((keys) => keys.key)
+																.includes(arr.id)
+															? true
+															: false
+														: false
+												}
+												onDragStart={(e) => dragStartHandler(e, arr.id, true)}
+												onDrag={(e) => dragHandler(e)}
+												onDragEnd={(e) =>
+													dragEndHandler(
+														e,
+														arr.id - 1,
+														rewardsRef.current[arr.id - 1],
+														true,
+														{
+															key: arr.id,
+															userid: arr.userid,
+															filename: arr.filename,
+														}
+													)
+												}
+												onDrop={(e) => dropHandler(e)}
+												onDragOver={() => false}
+												used={
+													adornment
+														? displayed
+																.map((keys) => keys.imagekey)
+																.includes(arr.id)
+															? true
+															: false
+														: false
+												}
+												droped={
+													adornment
+														? dropedRewards
+																.filter((array) => !array === false)
+																.map((keys) => keys.imagekey)
+																.includes(arr.id)
+															? rewardsStat[arr.id - 1]
+																? true
+																: false
+															: false
+														: false
+												}
+												ref={(el) => (rewardsRef.current[arr.id - 1] = el)}
+											>
+												<Rewards
+													src={`http://localhost:8080/images/${arr.filename}.svg`}
+													alt=''
+													draggable={false}
+												/>
+												{adornment ? (
+													<DisplayedDelete
+														src={deleteIcon}
+														alt=''
 														draggable={false}
+														onClick={() => resetDroped(arr.id - 1)}
 													/>
-													{adornment ? (
-														<DisplayedDelete
-															src={deleteIcon}
-															alt=''
-															draggable={false}
-															onClick={() => resetDroped(arr.id - 1)}
-														/>
-													) : null}
-												</RewardsBox>
-											</BranchWrapper>
-										))}
-								</div>
-							</FlowerList>
+												) : null}
+											</RewardsBox>
+										</BranchWrapper>
+									))}
+							</div>
 							{rewardsList(themes.purple, 'purple')}
-						</FlowerListContainer>
+						</FlowerList>
 					)}
 				</UserBoard>
 				{createList ? null : (

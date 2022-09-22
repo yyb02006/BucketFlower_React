@@ -32,8 +32,6 @@ useRef Hook으로 컨테이너가 가진 left값을 가져와서 사용자가 �
 
 컨테이너 위에 있는 꽃을 삭제하고 '나의 버킷플라워 메뉴'로 되돌릴 수 있는 기능도 구현 필요.
 
----
-
 ## 2022-09-18 Issues
 
 fixed속성을 준 모달창이 뷰포트가 아닌 userBoard 엘리멘트에 종속되는 문제 발생.
@@ -64,3 +62,13 @@ console.log(array.splice(2,1))의 값은 [3]이 된다.
 함수의 인자로 들어갈때의 splice의 작동방식이 변한다는 것을 알게 되었지만, 원인에 대해서는 추후에 찾아봐야겠다.
 
 참고 : https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
+
+## 2022-09-21 Issues
+
+추가된 순서가 다른 branch category의 엘리먼트와 purple category의 엘리먼트가 FlowerContainer에 drop되지 않는 문제 발생. index와 arr의 차이에서 발생했다고 생각되지만 정확히 알 수 없어서 계속 원인을 찾는 중.
+
+---
+
+문제는 단순했는데, onDragEnd시에(여기서는 onDrop을 사용하지 않고 onDragEnd만 사용. onDargOver에 대한 이해가 부족하기도 하고 순서차이 이외에 onDrop과 onDragEnd가 어떤 차이가 있는지 아직 잘 느끼지 못함.) 불러오는 useRef의 배열넘버가 index로 되어있어 purple category의 첫 번재 엘리먼트는 index 0을 불러왔고, 이는 곧 ref배열에서 첫번째 즉, 전체에서 첫 번째인 redbranch를 불러오는 결과가 되었다. 같은 방식으로 branch category의 마지막 엘리먼트는 본인의 index 7을 불러왔고, 8번째로 추가된 purple category의 첫 번째 엘리먼트를 불러온 것이다.
+
+Personal.js에 도저히 읽기 힘들 정도로 모든 코드가 때려박아져 있는 게 결국 화근이 됐다. 다른 컴포넌트나 하다못해 유틸함수가 나누어져 있었더라면 생각보다 금방 찾을 수 있었을지도 모른다. 코드가 1500줄이 되어버리니 index넘버를 arr - 1로 수정하는 과정에서 ref를 건너뛰게 된 것이다.
