@@ -325,6 +325,9 @@ const FlowerList = styled.div`
 	margin-top: 44px;
 	animation: ${MoveBox} 0.5s;
 	animation-timing-function: ease-in-out(0.42, 0, 0.58, 1);
+	height: 520px;
+	overflow-y: overlay;
+	position: relative;
 	& div:nth-child(2) {
 		display: flex;
 		flex-wrap: wrap;
@@ -356,6 +359,7 @@ const BranchWrapper = styled.div`
 		props.isSelected
 			? css`
 					outline: 2px solid #65e8c4;
+					outline-offset: -2px;
 			  `
 			: null}
 `;
@@ -363,14 +367,6 @@ const BranchWrapper = styled.div`
 const RewardsBox = styled.div`
 	position: absolute;
 	transform: translate(0, 0);
-	${(props) =>
-		props.droped
-			? !props.used
-				? css`
-						outline: 2px solid #65e8c4;
-				  `
-				: null
-			: null};
 	${(props) =>
 		props.used
 			? css`
@@ -388,6 +384,18 @@ const Rewards = styled.img`
 const RewardsShadow = styled.img`
 	position: absolute;
 	opacity: 40%;
+`;
+
+const RotateHandler = styled.div`
+	width: 16px;
+	height: 16px;
+	background-color: skyblue;
+	position: absolute;
+	top: -16px;
+	left: -16px;
+	border-radius: 8px;
+	filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.35));
+	cursor: pointer;
 `;
 
 const WriteButton = styled.input`
@@ -684,6 +692,11 @@ function Personal({ isLogin }) {
 		top: 0,
 	});
 	const [displayed, setDisplayed] = useState([]);
+	const [rotateActive, setRotateActive] = useState(false);
+	const [mouseLocation, setMouseLocation] = useState({});
+	const [boxStyle, setBoxStyle] = useState({});
+	const [elIndex, setElIndex] = useState(0);
+	const radians = 180 / Math.PI;
 	const move = useNavigate();
 	const containerRef = useRef();
 	const selectImage = useRef();
@@ -947,7 +960,7 @@ function Personal({ isLogin }) {
 		return;
 	};
 
-	const dragEndHandler = (e, index, ref, isReward, info) => {
+	const dragEndHandler = (e, index, ref, isReward, info, from) => {
 		if (isReward) {
 			rewardsStatArr[info.key - 1] = { isSelected: false };
 			setRewardsStat((p) => (p = rewardsStatArr));
@@ -967,6 +980,7 @@ function Personal({ isLogin }) {
 			filename: info.filename,
 			posx: e.clientX + clientLeft - boxLeft,
 			posy: e.clientY + clientTop - boxTop,
+			from: from,
 		};
 		console.log(clientRight);
 		if (
@@ -975,42 +989,103 @@ function Personal({ isLogin }) {
 			e.clientY + clientTop > boxTop &&
 			e.clientY + clientBottom < boxBottom
 		) {
-			e.target.style.left = `${
-				e.target.offsetLeft + e.clientX - dropedLocation.clientX
-			}px`;
-			e.target.style.top = `${
-				e.target.offsetTop + e.clientY - dropedLocation.clientY
-			}px`;
-			setDropedRewards((p) => (p = newDroped));
-			console.log(dropedRewards);
-			// if (isReward) {
-			// 	rewardsStatArr[info.key - 1] = { isInDropBox: true };
-			// 	setRewardsStat((p) => (p = rewardsStatArr));
-			// }
+			if (from === 'rewards') {
+				e.target.style.left = `${dropedLocation.originalX}px`;
+				e.target.style.top = `${dropedLocation.originalY}px`;
+				setDropedRewards((p) => (p = newDroped));
+				console.log(dropedRewards);
+			} else {
+				e.target.style.left = `${
+					e.target.offsetLeft + e.clientX - dropedLocation.clientX
+				}px`;
+				e.target.style.top = `${
+					e.target.offsetTop + e.clientY - dropedLocation.clientY
+				}px`;
+				setDropedRewards((p) => (p = newDroped));
+				console.log(
+					dropedRewards
+						.filter((arr) => !arr === false)
+						.filter((arr) => arr.from === 'rewards' || arr.from === 'droped')
+				);
+				console.log(
+					dropedRewards
+						.filter((arr) => !arr === false)
+						.map((arr) => arr.imagekey)
+				);
+				// if (isReward) {
+				// 	rewardsStatArr[info.key - 1] = { isInDropBox: true };
+				// 	setRewardsStat((p) => (p = rewardsStatArr));
+				// }
+			}
 		} else {
 			e.target.style.left = `${dropedLocation.originalX}px`;
 			e.target.style.top = `${dropedLocation.originalY}px`;
+			console.log(dropedRewards);
+			console.log(
+				e.clientX + clientLeft > boxLeft,
+				e.clientX + clientRight < boxRight,
+				e.clientY + clientTop > boxTop,
+				e.clientY + clientBottom < boxBottom
+			);
+			console.log(ref);
 		}
 	};
 
-	const dragLeaveHandler = (e) => {
-		e.preventDefault();
+	// const resetDroped = (index) => {
+	// 	console.log(index);
+	// 	rewardsRef.current[index].style.left = 'auto';
+	// 	rewardsRef.current[index].style.top = 'auto';
+	// 	let reset = dropedRewards;
+	// 	reset.splice(index, 1, undefined);
+	// 	setDropedRewards((p) => (p = reset));
+	// 	rewardsStatArr.splice(index, 1, undefined);
+	// 	setRewardsStat((p) => (p = rewardsStatArr));
+	// };
+
+	//Rotate
+	const initRotate = (e, index) => {
+		setRotateActive((p) => (p = true));
+		setElIndex((p) => (p = index));
 	};
 
-	const resetDroped = (index) => {
-		console.log(index);
-		rewardsRef.current[index].style.left = 'auto';
-		rewardsRef.current[index].style.top = 'auto';
-		let reset = dropedRewards;
-		reset.splice(index, 1, undefined);
-		setDropedRewards((p) => (p = reset));
-		rewardsStatArr.splice(index, 1, undefined);
-		setRewardsStat((p) => (p = rewardsStatArr));
+	const endRotate = () => {
+		setRotateActive((p) => (p = false));
 	};
 
-	// useEffect(() => {
-	// 	console.log(rewardsStat);
-	// }, [rewardsStat]);
+	const rotate = (e) => {
+		if (rotateActive) {
+			let elementData = displayedRef.current[elIndex].getBoundingClientRect();
+
+			setMouseLocation((p) => (p = { clientX: e.clientX, clientY: e.clientY }));
+			setBoxStyle(
+				(p) =>
+					(p = {
+						boxWidth: elementData.width,
+						boxHeight: elementData.height,
+						boxLeft: elementData.left,
+						boxTop: elementData.top,
+					})
+			);
+
+			let rotate = 0;
+
+			let boxCenter = {
+				x: boxStyle.boxLeft + boxStyle.boxWidth / 2,
+				y: boxStyle.boxTop + boxStyle.boxHeight / 2,
+			};
+
+			let arcPoints = {
+				x: mouseLocation.clientX - boxCenter.x,
+				y: mouseLocation.clientY - boxCenter.y,
+			};
+			let angle = Math.floor(Math.atan2(arcPoints.y, arcPoints.x) * radians);
+			let startAngle = 180 - 45;
+
+			rotate = angle + startAngle;
+			displayedRef.current[elIndex].style.transform = `rotate(${rotate}deg)`;
+			console.log(rotate);
+		}
+	};
 
 	const insertImg = (e) => {
 		const img = e.target.files[0];
@@ -1099,7 +1174,7 @@ function Personal({ isLogin }) {
 
 	const rewardsList = (listTitle, theme) => {
 		return (
-			<FlowerList>
+			<>
 				<Theme>{listTitle}</Theme>
 				<div>
 					{rewards
@@ -1141,7 +1216,8 @@ function Personal({ isLogin }) {
 												key: arr.id,
 												userid: arr.userid,
 												filename: arr.filename,
-											}
+											},
+											'rewards'
 										)
 									}
 									onDrop={(e) => dropHandler(e)}
@@ -1150,15 +1226,10 @@ function Personal({ isLogin }) {
 										adornment
 											? displayed.map((keys) => keys.imagekey).includes(arr.id)
 												? true
-												: false
-											: false
-									}
-									droped={
-										dropedRewards
-											.filter((array) => !array === false)
-											.map((keys) => keys.imagekey)
-											.includes(arr.id)
-											? rewardsStat[arr.id - 1]
+												: dropedRewards
+														.filter((arr) => !arr === false)
+														.map((arr) => arr.imagekey)
+														.includes(arr.id)
 												? true
 												: false
 											: false
@@ -1170,19 +1241,11 @@ function Personal({ isLogin }) {
 										alt=''
 										draggable={false}
 									/>
-									{adornment ? (
-										<DisplayedDelete
-											src={deleteIcon}
-											alt=''
-											draggable={false}
-											onClick={() => resetDroped(arr.id - 1)}
-										/>
-									) : null}
 								</RewardsBox>
 							</BranchWrapper>
 						))}
 				</div>
-			</FlowerList>
+			</>
 		);
 	};
 
@@ -1193,10 +1256,58 @@ function Personal({ isLogin }) {
 				<FlowerContainer
 					ref={containerRef}
 					width={containerWidth}
-					onDragLeave={(e) => dragLeaveHandler(e)}
+					onMouseUp={endRotate}
+					onMouseMove={(e) => rotate(e)}
 				>
 					<FlowerInner>
 						<FlowerImgBox>
+							{dropedRewards
+								.filter((arr) => !arr === false)
+								.filter(
+									(arr) => arr.from === 'rewards' || arr.from === 'droped'
+								)
+								.map((arr, index) => (
+									<DisplayedContainer
+										key={arr.imagekey}
+										left={`${arr.posx}px`}
+										top={`${arr.posy}px`}
+										outline={adornment ? true : false}
+										draggable={adornment ? true : false}
+										onDragStart={(e) =>
+											dragStartHandler(e, arr.imagekey, false)
+										}
+										onDrag={(e) => dragHandler(e)}
+										onDragEnd={(e) =>
+											dragEndHandler(
+												e,
+												arr.imagekey - 1,
+												displayedRef.current[arr.imagekey - 1],
+												true,
+												{
+													key: arr.imagekey,
+													userid: arr.userid,
+													filename: arr.filename,
+												},
+												'droped'
+											)
+										}
+										ref={(el) => (displayedRef.current[arr.imagekey - 1] = el)}
+									>
+										<DisplayedImg
+											src={`http://localhost:8080/images/${arr.filename}.svg`}
+											alt=''
+											draggable={false}
+										/>
+										{adornment ? (
+											<DisplayedDelete
+												src={deleteIcon}
+												alt=''
+												draggable={false}
+												onClick={() => deleteDisplayed(arr.imagekey, index)}
+											/>
+										) : null}
+									</DisplayedContainer>
+								))}
 							{displayed.map((arr, index) => (
 								<DisplayedContainer
 									key={arr.id}
@@ -1210,16 +1321,17 @@ function Personal({ isLogin }) {
 										dragEndHandler(
 											e,
 											arr.imagekey - 1,
-											displayedRef.current[index],
+											displayedRef.current[arr.imagekey - 1],
 											false,
 											{
 												key: arr.imagekey,
 												userid: arr.userid,
 												filename: arr.filename,
-											}
+											},
+											'displayed'
 										)
 									}
-									ref={(el) => (displayedRef.current[index] = el)}
+									ref={(el) => (displayedRef.current[arr.imagekey - 1] = el)}
 								>
 									<DisplayedImg
 										src={`http://localhost:8080/images/${arr.filename}.svg`}
@@ -1232,6 +1344,12 @@ function Personal({ isLogin }) {
 											alt=''
 											draggable={false}
 											onClick={() => deleteDisplayed(arr.imagekey, index)}
+										/>
+									) : null}
+									{adornment ? (
+										<RotateHandler
+											draggable={false}
+											onMouseDown={(e) => initRotate(e, arr.imagekey - 1)}
 										/>
 									) : null}
 								</DisplayedContainer>
@@ -1377,7 +1495,8 @@ function Personal({ isLogin }) {
 															key: arr.id,
 															userid: arr.userid,
 															filename: arr.filename,
-														}
+														},
+														'rewards'
 													)
 												}
 												onDrop={(e) => dropHandler(e)}
@@ -1388,18 +1507,11 @@ function Personal({ isLogin }) {
 																.map((keys) => keys.imagekey)
 																.includes(arr.id)
 															? true
-															: false
-														: false
-												}
-												droped={
-													adornment
-														? dropedRewards
-																.filter((array) => !array === false)
-																.map((keys) => keys.imagekey)
-																.includes(arr.id)
-															? rewardsStat[arr.id - 1]
-																? true
-																: false
+															: dropedRewards
+																	.filter((arr) => !arr === false)
+																	.map((arr) => arr.imagekey)
+																	.includes(arr.id)
+															? true
 															: false
 														: false
 												}
@@ -1410,14 +1522,6 @@ function Personal({ isLogin }) {
 													alt=''
 													draggable={false}
 												/>
-												{adornment ? (
-													<DisplayedDelete
-														src={deleteIcon}
-														alt=''
-														draggable={false}
-														onClick={() => resetDroped(arr.id - 1)}
-													/>
-												) : null}
 											</RewardsBox>
 										</BranchWrapper>
 									))}

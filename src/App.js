@@ -7,6 +7,7 @@ import Signup from './routes/Signup';
 import axiosInstance from './utils/axiosConfig';
 import React, { useLayoutEffect, useState } from 'react';
 import UserHome from './routes/UserHome';
+import RotateTest from './components/RotateTest';
 
 function App() {
 	const [isLogin, setIsLogin] = useState('');
@@ -31,6 +32,7 @@ function App() {
 				<Route path='/login' element={<Login />} />
 				<Route path='/signup' element={<Signup />} />
 				<Route path='/userhome' element={<UserHome />} />
+				<Route path='/rotatetest' element={<RotateTest />} />
 			</Routes>
 		</BrowserRouter>
 	);
