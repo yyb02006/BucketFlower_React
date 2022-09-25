@@ -87,6 +87,7 @@ const FlowerContainer = styled.div`
 	position: relative;
 	margin-left: 10px;
 	top: -10px;
+	z-index: 10;
 `;
 
 const FlowerInner = styled.div`
@@ -918,7 +919,7 @@ function Personal({ isLogin }) {
 		setAdornment((p) => !p);
 	};
 
-	const dragStartHandler = (e, key, isReward) => {
+	const dragStartHandler = (e, key, isReward, from, file) => {
 		setDropedLocation({
 			clientX: e.clientX,
 			clientY: e.clientY,
@@ -934,9 +935,11 @@ function Personal({ isLogin }) {
 		}
 		console.log(rewardsRef);
 
-		let img = new Image();
-		img.src = '';
-		e.dataTransfer.setDragImage(img, 0, 0);
+		if (from !== 'rewards') {
+			let img = new Image();
+			img.src = '';
+			e.dataTransfer.setDragImage(img, 0, 0);
+		}
 	};
 
 	const dragHandler = (e) => {
@@ -1265,7 +1268,9 @@ function Personal({ isLogin }) {
 												: false
 											: false
 									}
-									onDragStart={(e) => dragStartHandler(e, arr.id, true)}
+									onDragStart={(e) =>
+										dragStartHandler(e, arr.id, true, 'rewards', arr.filename)
+									}
 									onDrag={(e) => dragHandler(e)}
 									onDragEnd={(e) =>
 										dragEndHandler(
@@ -1335,7 +1340,13 @@ function Personal({ isLogin }) {
 										outline={adornment ? true : false}
 										draggable={adornment ? isDraggable : false}
 										onDragStart={(e) =>
-											dragStartHandler(e, arr.imagekey, false)
+											dragStartHandler(
+												e,
+												arr.imagekey,
+												false,
+												'droped',
+												arr.filename
+											)
 										}
 										onDrag={(e) => dragHandler(e)}
 										onDragEnd={(e) =>
@@ -1384,7 +1395,15 @@ function Personal({ isLogin }) {
 									outline={adornment ? true : false}
 									angle={`${arr.angle}deg`}
 									draggable={adornment ? isDraggable : false}
-									onDragStart={(e) => dragStartHandler(e, arr.imagekey, false)}
+									onDragStart={(e) =>
+										dragStartHandler(
+											e,
+											arr.imagekey,
+											false,
+											'displayed',
+											arr.filename
+										)
+									}
 									onDrag={(e) => dragHandler(e)}
 									onDragEnd={(e) =>
 										dragEndHandler(
@@ -1553,7 +1572,15 @@ function Personal({ isLogin }) {
 															: false
 														: false
 												}
-												onDragStart={(e) => dragStartHandler(e, arr.id, true)}
+												onDragStart={(e) =>
+													dragStartHandler(
+														e,
+														arr.id,
+														true,
+														'rewards',
+														arr.filename
+													)
+												}
 												onDrag={(e) => dragHandler(e)}
 												onDragEnd={(e) =>
 													dragEndHandler(
