@@ -106,7 +106,7 @@ const FlowerImgBox = styled.div`
 
 const DisplayedContainer = styled.div`
 	position: absolute;
-	transform: translate(0, 0);
+	transform: translate(0, 0) rotate(${(props) => props.angle});
 	left: ${(props) => props.left};
 	top: ${(props) => props.top};
 	${(props) =>
@@ -693,9 +693,9 @@ function Personal({ isLogin }) {
 	});
 	const [displayed, setDisplayed] = useState([]);
 	const [rotateActive, setRotateActive] = useState(false);
-	const [mouseLocation, setMouseLocation] = useState({});
-	const [boxStyle, setBoxStyle] = useState({});
 	const [elIndex, setElIndex] = useState(0);
+	const [isDraggable, setIsDraggable] = useState(true);
+	const [rotateAngle, setRotateAngle] = useState(0);
 	const radians = 180 / Math.PI;
 	const move = useNavigate();
 	const containerRef = useRef();
@@ -780,6 +780,7 @@ function Personal({ isLogin }) {
 				userid: isUser,
 			});
 			loadDisplayed();
+			setDropedRewards((p) => (p = []));
 		} catch (error) {
 			console.log(error);
 		}
@@ -932,6 +933,10 @@ function Personal({ isLogin }) {
 			setRewardsStat((p) => (p = rewardsStatArr));
 		}
 		console.log(rewardsRef);
+
+		let img = new Image();
+		img.src = '';
+		e.dataTransfer.setDragImage(img, 0, 0);
 	};
 
 	const dragHandler = (e) => {
@@ -974,15 +979,28 @@ function Personal({ isLogin }) {
 		const boxRight = containerRef.current.getBoundingClientRect().right;
 		const boxBottom = containerRef.current.getBoundingClientRect().bottom;
 		console.log(displayedRef);
-		newDroped[index] = {
-			imagekey: info.key,
-			userid: info.userid,
-			filename: info.filename,
-			posx: e.clientX + clientLeft - boxLeft,
-			posy: e.clientY + clientTop - boxTop,
-			from: from,
-		};
-		console.log(clientRight);
+		if (newDroped[index]) {
+			newDroped[index] = {
+				...newDroped[index],
+				imagekey: info.key,
+				userid: info.userid,
+				filename: info.filename,
+				posx: e.clientX + clientLeft - boxLeft,
+				posy: e.clientY + clientTop - boxTop,
+				from: from,
+			};
+		} else {
+			newDroped[index] = {
+				imagekey: info.key,
+				userid: info.userid,
+				filename: info.filename,
+				posx: e.clientX + clientLeft - boxLeft,
+				posy: e.clientY + clientTop - boxTop,
+				from: from,
+				angle: info.angle,
+			};
+		}
+		console.log(rewards.filter((arr) => arr.id - 1 === index)[0].basicangle);
 		if (
 			e.clientX + clientLeft > boxLeft &&
 			e.clientX + clientRight < boxRight &&
@@ -1001,17 +1019,7 @@ function Personal({ isLogin }) {
 				e.target.style.top = `${
 					e.target.offsetTop + e.clientY - dropedLocation.clientY
 				}px`;
-				setDropedRewards((p) => (p = newDroped));
-				console.log(
-					dropedRewards
-						.filter((arr) => !arr === false)
-						.filter((arr) => arr.from === 'rewards' || arr.from === 'droped')
-				);
-				console.log(
-					dropedRewards
-						.filter((arr) => !arr === false)
-						.map((arr) => arr.imagekey)
-				);
+				setDropedRewards((p) => (p = newDroped), console.log(dropedRewards));
 				// if (isReward) {
 				// 	rewardsStatArr[info.key - 1] = { isInDropBox: true };
 				// 	setRewardsStat((p) => (p = rewardsStatArr));
@@ -1045,45 +1053,98 @@ function Personal({ isLogin }) {
 	//Rotate
 	const initRotate = (e, index) => {
 		setRotateActive((p) => (p = true));
+		setIsDraggable((p) => (p = false));
 		setElIndex((p) => (p = index));
+		let elementData = displayedRef.current[index].getBoundingClientRect();
+
+		let location = { clientX: e.clientX, clientY: e.clientY };
+		let style = {
+			boxWidth: elementData.width,
+			boxHeight: elementData.height,
+			boxLeft: elementData.left,
+			boxTop: elementData.top,
+		};
+
+		let boxCenter = {
+			x: style.boxLeft + style.boxWidth / 2,
+			y: style.boxTop + style.boxHeight / 2,
+		};
+
+		let arcPoints = {
+			y: location.clientY - boxCenter.y,
+			x: location.clientX - boxCenter.x,
+		};
+		let angle = Math.floor(Math.atan2(arcPoints.y, arcPoints.x) * radians);
+		let startAngle = 180 - rewards[index].basicangle;
+		console.log(angle + startAngle, index);
+
+		setRotateAngle((p) => (p = angle + startAngle));
 	};
 
+	useEffect(() => {
+		console.log(rotateAngle);
+	}, [rotateAngle]);
+
 	const endRotate = () => {
-		setRotateActive((p) => (p = false));
+		if (rotateActive) {
+			setRotateActive((p) => (p = false));
+			setIsDraggable((p) => (p = true));
+			let angle = displayedRef.current[elIndex].style.transform;
+			if (newDroped[elIndex]) {
+				newDroped[elIndex].angle = rotateAngle;
+				setDropedRewards((p) => (p = newDroped), console.log(dropedRewards));
+			} else {
+				newDroped[elIndex] = {
+					imagekey: elIndex + 1,
+					userid: isUser,
+					filename: displayed.filter((arr) => arr.imagekey === elIndex + 1)[0]
+						.filename,
+					posx: displayed.filter((arr) => arr.imagekey === elIndex + 1)[0].posx,
+					posy: displayed.filter((arr) => arr.imagekey === elIndex + 1)[0].posy,
+				};
+				newDroped[elIndex].angle = rotateAngle;
+				setDropedRewards((p) => (p = newDroped), console.log(dropedRewards));
+			}
+			console.log(
+				elIndex,
+				dropedRewards,
+				displayed,
+				rewards,
+				newDroped[elIndex],
+				Number(angle.slice(7, 9))
+			);
+		}
 	};
 
 	const rotate = (e) => {
 		if (rotateActive) {
 			let elementData = displayedRef.current[elIndex].getBoundingClientRect();
 
-			setMouseLocation((p) => (p = { clientX: e.clientX, clientY: e.clientY }));
-			setBoxStyle(
-				(p) =>
-					(p = {
-						boxWidth: elementData.width,
-						boxHeight: elementData.height,
-						boxLeft: elementData.left,
-						boxTop: elementData.top,
-					})
-			);
-
-			let rotate = 0;
+			let location = { clientX: e.clientX, clientY: e.clientY };
+			let style = {
+				boxWidth: elementData.width,
+				boxHeight: elementData.height,
+				boxLeft: elementData.left,
+				boxTop: elementData.top,
+			};
 
 			let boxCenter = {
-				x: boxStyle.boxLeft + boxStyle.boxWidth / 2,
-				y: boxStyle.boxTop + boxStyle.boxHeight / 2,
+				x: style.boxLeft + style.boxWidth / 2,
+				y: style.boxTop + style.boxHeight / 2,
 			};
 
 			let arcPoints = {
-				x: mouseLocation.clientX - boxCenter.x,
-				y: mouseLocation.clientY - boxCenter.y,
+				x: location.clientX - boxCenter.x,
+				y: location.clientY - boxCenter.y,
 			};
 			let angle = Math.floor(Math.atan2(arcPoints.y, arcPoints.x) * radians);
-			let startAngle = 180 - 45;
+			let startAngle = 180 - rewards[elIndex].basicangle;
+			console.log(rewards[elIndex].basicangle);
 
-			rotate = angle + startAngle;
-			displayedRef.current[elIndex].style.transform = `rotate(${rotate}deg)`;
-			console.log(rotate);
+			setRotateAngle((p) => (p = angle + startAngle));
+			displayedRef.current[
+				elIndex
+			].style.transform = `rotate(${rotateAngle}deg)`;
 		}
 	};
 
@@ -1200,7 +1261,7 @@ function Personal({ isLogin }) {
 									draggable={
 										adornment
 											? !displayed.map((keys) => keys.key).includes(arr.id)
-												? true
+												? isDraggable
 												: false
 											: false
 									}
@@ -1272,7 +1333,7 @@ function Personal({ isLogin }) {
 										left={`${arr.posx}px`}
 										top={`${arr.posy}px`}
 										outline={adornment ? true : false}
-										draggable={adornment ? true : false}
+										draggable={adornment ? isDraggable : false}
 										onDragStart={(e) =>
 											dragStartHandler(e, arr.imagekey, false)
 										}
@@ -1287,6 +1348,7 @@ function Personal({ isLogin }) {
 													key: arr.imagekey,
 													userid: arr.userid,
 													filename: arr.filename,
+													angle: arr.angle,
 												},
 												'droped'
 											)
@@ -1306,6 +1368,12 @@ function Personal({ isLogin }) {
 												onClick={() => deleteDisplayed(arr.imagekey, index)}
 											/>
 										) : null}
+										{adornment ? (
+											<RotateHandler
+												draggable={false}
+												onMouseDown={(e) => initRotate(e, arr.imagekey - 1)}
+											/>
+										) : null}
 									</DisplayedContainer>
 								))}
 							{displayed.map((arr, index) => (
@@ -1314,7 +1382,8 @@ function Personal({ isLogin }) {
 									left={`${arr.posx}px`}
 									top={`${arr.posy}px`}
 									outline={adornment ? true : false}
-									draggable={adornment ? true : false}
+									angle={`${arr.angle}deg`}
+									draggable={adornment ? isDraggable : false}
 									onDragStart={(e) => dragStartHandler(e, arr.imagekey, false)}
 									onDrag={(e) => dragHandler(e)}
 									onDragEnd={(e) =>
@@ -1327,6 +1396,7 @@ function Personal({ isLogin }) {
 												key: arr.imagekey,
 												userid: arr.userid,
 												filename: arr.filename,
+												angle: arr.angle,
 											},
 											'displayed'
 										)
@@ -1479,7 +1549,7 @@ function Personal({ isLogin }) {
 														? !displayed
 																.map((keys) => keys.key)
 																.includes(arr.id)
-															? true
+															? isDraggable
 															: false
 														: false
 												}
@@ -1495,6 +1565,7 @@ function Personal({ isLogin }) {
 															key: arr.id,
 															userid: arr.userid,
 															filename: arr.filename,
+															angle: 0,
 														},
 														'rewards'
 													)

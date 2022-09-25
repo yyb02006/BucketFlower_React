@@ -41,7 +41,7 @@ function RotateTest() {
 	const [mouseLocation, setMouseLocation] = useState({});
 	const [boxStyle, setBoxStyle] = useState({});
 	const radians = 180 / Math.PI;
-	const box = useRef();
+	const box = useRef([]);
 
 	const start = (e) => {
 		setRotateActive((p) => (p = true));
@@ -91,10 +91,10 @@ function RotateTest() {
 
 	return (
 		<Background onMouseUp={(e) => end(e)} onMouseMove={(e) => move(e)}>
-			<TestBox ref={box} left={30}>
+			<TestBox ref={box[0]} left={30}>
 				<Handler onMouseDown={(e) => start(e)}></Handler>
 			</TestBox>
-			<TestBox ref={box} left={70}>
+			<TestBox ref={box[1]} left={70}>
 				<Handler onMouseDown={(e) => start(e)}></Handler>
 			</TestBox>
 		</Background>

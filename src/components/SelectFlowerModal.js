@@ -271,13 +271,14 @@ function SelectFlowerModal({ onModal, onCancel, userId }) {
 		setSwipeBar((p) => (p = '-520px'));
 	};
 
-	const selectReward = async (file, category, theme) => {
+	const selectReward = async (file, category, theme, basicAngle) => {
 		try {
 			const req = await axios.post('http://localhost:8080/setreward', {
 				userid: userId,
 				rewards: file,
 				category: category,
 				theme: theme,
+				basicangle: basicAngle,
 			});
 			onCancel();
 		} catch (error) {
@@ -315,7 +316,12 @@ function SelectFlowerModal({ onModal, onCancel, userId }) {
 									<BranchesWrapper
 										key={arr.id}
 										onClick={() =>
-											selectReward(arr.filename, arr.category, arr.theme)
+											selectReward(
+												arr.filename,
+												arr.category,
+												arr.theme,
+												arr.basicangle
+											)
 										}
 									>
 										<img
