@@ -68,7 +68,7 @@ const BackgroundWrapper = styled.div`
 	width: 100vw;
 	min-height: 920px;
 	height: 100%;
-	position: absolute;
+	position: fixed;
 	overflow: hidden;
 `;
 
@@ -87,7 +87,6 @@ const FlowerContainer = styled.div`
 	position: relative;
 	margin-left: 10px;
 	top: -10px;
-	z-index: 10;
 `;
 
 const FlowerInner = styled.div`
@@ -419,15 +418,16 @@ const WriteButtonWrapper = styled.div`
 `;
 
 const CreateContainer = styled.div`
+	box-sizing: border-box;
 	top: 0px;
 	width: 100%;
-	height: 100vh;
+	min-height: 100%;
 	background-color: rgba(0, 0, 0, 0.4);
 	position: absolute;
+	padding: 100px 0;
 	& > div {
 		border-radius: 24px;
 		position: relative;
-		top: 100px;
 		width: calc(1180px - 60px);
 		border-radius: 24px;
 		background-color: #fafafa;
@@ -889,6 +889,7 @@ function Personal({ isLogin }) {
 
 	const exitForm = () => {
 		setCreateList((p) => (p = false));
+		cancelSheets();
 	};
 
 	const insertTitle = (e) => {
@@ -1239,7 +1240,11 @@ function Personal({ isLogin }) {
 	const rewardsList = (listTitle, theme) => {
 		return (
 			<>
-				<Theme>{listTitle}</Theme>
+				<Theme>
+					{rewards.filter((arr) => arr.theme === theme).length > 0
+						? listTitle
+						: null}
+				</Theme>
 				<div>
 					{rewards
 						.filter((arr) => arr.theme === theme)
@@ -1282,6 +1287,7 @@ function Personal({ isLogin }) {
 												key: arr.id,
 												userid: arr.userid,
 												filename: arr.filename,
+												angle: 0,
 											},
 											'rewards'
 										)
@@ -1316,35 +1322,94 @@ function Personal({ isLogin }) {
 	};
 
 	return (
-		<BackgroundWrapper>
-			<Background />
-			<PersonalWrapper>
-				<FlowerContainer
-					ref={containerRef}
-					width={containerWidth}
-					onMouseUp={endRotate}
-					onMouseMove={(e) => rotate(e)}
-				>
-					<FlowerInner>
-						<FlowerImgBox>
-							{dropedRewards
-								.filter((arr) => !arr === false)
-								.filter(
-									(arr) => arr.from === 'rewards' || arr.from === 'droped'
-								)
-								.map((arr, index) => (
+		<>
+			<BackgroundWrapper>
+				<Background />
+				<PersonalWrapper>
+					<FlowerContainer
+						ref={containerRef}
+						width={containerWidth}
+						onMouseUp={endRotate}
+						onMouseMove={(e) => rotate(e)}
+					>
+						<FlowerInner>
+							<FlowerImgBox>
+								{dropedRewards
+									.filter((arr) => !arr === false)
+									.filter(
+										(arr) => arr.from === 'rewards' || arr.from === 'droped'
+									)
+									.map((arr, index) => (
+										<DisplayedContainer
+											key={arr.imagekey}
+											left={`${arr.posx}px`}
+											top={`${arr.posy}px`}
+											outline={adornment ? true : false}
+											draggable={adornment ? isDraggable : false}
+											onDragStart={(e) =>
+												dragStartHandler(
+													e,
+													arr.imagekey,
+													false,
+													'droped',
+													arr.filename
+												)
+											}
+											onDrag={(e) => dragHandler(e)}
+											onDragEnd={(e) =>
+												dragEndHandler(
+													e,
+													arr.imagekey - 1,
+													displayedRef.current[arr.imagekey - 1],
+													true,
+													{
+														key: arr.imagekey,
+														userid: arr.userid,
+														filename: arr.filename,
+														angle: arr.angle,
+													},
+													'droped'
+												)
+											}
+											ref={(el) =>
+												(displayedRef.current[arr.imagekey - 1] = el)
+											}
+										>
+											<DisplayedImg
+												src={`http://localhost:8080/images/${arr.filename}.svg`}
+												alt=''
+												draggable={false}
+											/>
+											{adornment ? (
+												<DisplayedDelete
+													src={deleteIcon}
+													alt=''
+													draggable={false}
+													onClick={() => deleteDisplayed(arr.imagekey, index)}
+												/>
+											) : null}
+											{adornment ? (
+												<RotateHandler
+													draggable={false}
+													onMouseDown={(e) => initRotate(e, arr.imagekey - 1)}
+												/>
+											) : null}
+										</DisplayedContainer>
+									))}
+								{displayed.map((arr, index) => (
 									<DisplayedContainer
-										key={arr.imagekey}
+										key={arr.id}
 										left={`${arr.posx}px`}
 										top={`${arr.posy}px`}
 										outline={adornment ? true : false}
+										angle={`${arr.angle}deg`}
 										draggable={adornment ? isDraggable : false}
 										onDragStart={(e) =>
 											dragStartHandler(
 												e,
 												arr.imagekey,
 												false,
-												'droped',
+												'displayed',
 												arr.filename
 											)
 										}
@@ -1354,14 +1419,14 @@ function Personal({ isLogin }) {
 												e,
 												arr.imagekey - 1,
 												displayedRef.current[arr.imagekey - 1],
-												true,
+												false,
 												{
 													key: arr.imagekey,
 													userid: arr.userid,
 													filename: arr.filename,
 													angle: arr.angle,
 												},
-												'droped'
+												'displayed'
 											)
 										}
 										ref={(el) => (displayedRef.current[arr.imagekey - 1] = el)}
@@ -1387,257 +1452,156 @@ function Personal({ isLogin }) {
 										) : null}
 									</DisplayedContainer>
 								))}
-							{displayed.map((arr, index) => (
-								<DisplayedContainer
-									key={arr.id}
-									left={`${arr.posx}px`}
-									top={`${arr.posy}px`}
-									outline={adornment ? true : false}
-									angle={`${arr.angle}deg`}
-									draggable={adornment ? isDraggable : false}
-									onDragStart={(e) =>
-										dragStartHandler(
-											e,
-											arr.imagekey,
-											false,
-											'displayed',
-											arr.filename
-										)
+							</FlowerImgBox>
+							<InnerLogo>
+								<Link to='/userhome'>
+									<Logo src={logo} alt='' />
+								</Link>
+							</InnerLogo>
+							<Adornment onClick={onAdornment}>
+								{adornment ? '그만꾸미기' : '꾸미기'}
+							</Adornment>
+						</FlowerInner>
+					</FlowerContainer>
+					<UserBoard top={adornment}>
+						<UserProfile>
+							<UserPictureWrapper>
+								<UserPicture
+									src={
+										userImageName
+											? userImageName === 'person96'
+												? person96
+												: `http://localhost:8080/${isUser}/profile/${userImageName}`
+											: null
 									}
-									onDrag={(e) => dragHandler(e)}
-									onDragEnd={(e) =>
-										dragEndHandler(
-											e,
-											arr.imagekey - 1,
-											displayedRef.current[arr.imagekey - 1],
-											false,
-											{
-												key: arr.imagekey,
-												userid: arr.userid,
-												filename: arr.filename,
-												angle: arr.angle,
-											},
-											'displayed'
-										)
-									}
-									ref={(el) => (displayedRef.current[arr.imagekey - 1] = el)}
-								>
-									<DisplayedImg
-										src={`http://localhost:8080/images/${arr.filename}.svg`}
-										alt=''
-										draggable={false}
-									/>
-									{adornment ? (
-										<DisplayedDelete
-											src={deleteIcon}
-											alt=''
-											draggable={false}
-											onClick={() => deleteDisplayed(arr.imagekey, index)}
-										/>
-									) : null}
-									{adornment ? (
-										<RotateHandler
-											draggable={false}
-											onMouseDown={(e) => initRotate(e, arr.imagekey - 1)}
-										/>
-									) : null}
-								</DisplayedContainer>
-							))}
-						</FlowerImgBox>
-						<InnerLogo>
-							<Link to='/userhome'>
-								<Logo src={logo} alt='' />
-							</Link>
-						</InnerLogo>
-						<Adornment onClick={onAdornment}>
-							{adornment ? '그만꾸미기' : '꾸미기'}
-						</Adornment>
-					</FlowerInner>
-				</FlowerContainer>
-				<UserBoard top={adornment}>
-					<UserProfile>
-						<UserPictureWrapper>
-							<UserPicture
-								src={
-									userImageName
-										? userImageName === 'person96'
-											? person96
-											: `http://localhost:8080/${isUser}/profile/${userImageName}`
-										: null
-								}
-								alt=''
-							></UserPicture>
-							<img
-								src={profilePictureIcon}
-								alt=''
-								onClick={() => profileImage.current.click()}
-							/>
-							<input
-								type='file'
-								accept='image/*'
-								//함수를 실행시키지 않아야 e로 file값 받아오기 가능
-								onChange={updateUserImage}
-								ref={profileImage}
-							/>
-						</UserPictureWrapper>
-						<div>
-							<span>{isUser}</span>님, 환영합니다!
-						</div>
-						<div>
-							<span onClick={openModal}>닉네임변경</span>
-							<div></div>
-							<span>SNS연동관리</span>
-							<div></div>
-							<span onClick={Logout}>로그아웃</span>
-						</div>
-					</UserProfile>
-					<BoardMenu>
-						<div>
-							<TodoListBtn
-								isSelect={selectMenu}
-								onClick={changeMenu}
-								disabled={selectMenu < 2 ? true : false}
-							>
-								나의 버킷리스트
-							</TodoListBtn>
-							<TodoListBar isSelect={selectMenu}></TodoListBar>
-						</div>
-						<div>
-							<FlowerListBtn
-								isSelect={selectMenu}
-								onClick={changeMenuReverse}
-								disabled={selectMenu === 2 ? true : false}
-							>
-								나의 버킷플라워
-							</FlowerListBtn>
-						</div>
-					</BoardMenu>
-					{selectMenu < 2 ? (
-						<TodoList>
-							{totalList > 0 ? (
-								<TodoListInfo>
-									총 <span>{totalList}개</span>의 버킷리스트 중{' '}
-									<span>{completeList}개</span>가 완료되었습니다.
-								</TodoListInfo>
-							) : (
-								<TodoListInfo>
-									아직 버킷리스트가 작성되지 않았어요! <br />
-									<span>{isUser}</span>님만의 버킷리스트를 작성해보세요!
-								</TodoListInfo>
-							)}
-							<SeparateBar />
-							{totalList > 0
-								? userList.map((list, index) => (
-										<UserPost
-											index={index}
-											list={list}
-											userId={isUser}
-											isOpen={createList}
-											isCompleted={list.isCompleted}
-											key={index}
-										></UserPost>
-								  ))
-								: null}
-						</TodoList>
-					) : (
-						<FlowerList>
-							<Theme>{themes.branch}</Theme>
+									alt=''
+								></UserPicture>
+								<img
+									src={profilePictureIcon}
+									alt=''
+									onClick={() => profileImage.current.click()}
+								/>
+								<input
+									type='file'
+									accept='image/*'
+									//함수를 실행시키지 않아야 e로 file값 받아오기 가능
+									onChange={updateUserImage}
+									ref={profileImage}
+								/>
+							</UserPictureWrapper>
 							<div>
-								{rewards
-									.filter((arr) => arr.theme === 'branch')
-									.map((arr, index) => (
-										<BranchWrapper
-											key={arr.id}
-											isSelected={
-												rewardsStat[arr.id - 1]
-													? rewardsStat[arr.id - 1].isSelected
-													: false
-											}
-										>
-											{rewardsStat[arr.id - 1] ? (
-												rewardsStat[arr.id - 1].isSelected ? (
-													<RewardsShadow
-														src={`http://localhost:8080/images/${arr.filename}.svg`}
-														alt=''
-													></RewardsShadow>
-												) : null
-											) : null}
-											<RewardsBox
-												draggable={
-													adornment
-														? !displayed
-																.map((keys) => keys.key)
-																.includes(arr.id)
-															? isDraggable
-															: false
-														: false
-												}
-												onDragStart={(e) =>
-													dragStartHandler(
-														e,
-														arr.id,
-														true,
-														'rewards',
-														arr.filename
-													)
-												}
-												onDrag={(e) => dragHandler(e)}
-												onDragEnd={(e) =>
-													dragEndHandler(
-														e,
-														arr.id - 1,
-														rewardsRef.current[arr.id - 1],
-														true,
-														{
-															key: arr.id,
-															userid: arr.userid,
-															filename: arr.filename,
-															angle: 0,
-														},
-														'rewards'
-													)
-												}
-												onDrop={(e) => dropHandler(e)}
-												onDragOver={() => false}
-												used={
-													adornment
-														? displayed
-																.map((keys) => keys.imagekey)
-																.includes(arr.id)
-															? true
-															: dropedRewards
-																	.filter((arr) => !arr === false)
-																	.map((arr) => arr.imagekey)
-																	.includes(arr.id)
-															? true
-															: false
-														: false
-												}
-												ref={(el) => (rewardsRef.current[arr.id - 1] = el)}
-											>
-												<Rewards
-													src={`http://localhost:8080/images/${arr.filename}.svg`}
-													alt=''
-													draggable={false}
-												/>
-											</RewardsBox>
-										</BranchWrapper>
-									))}
+								<span>{isUser}</span>님, 환영합니다!
 							</div>
-							{rewardsList(themes.purple, 'purple')}
-						</FlowerList>
+							<div>
+								<span onClick={openModal}>닉네임변경</span>
+								<div></div>
+								<span>SNS연동관리</span>
+								<div></div>
+								<span onClick={Logout}>로그아웃</span>
+							</div>
+						</UserProfile>
+						<BoardMenu>
+							<div>
+								<TodoListBtn
+									isSelect={selectMenu}
+									onClick={changeMenu}
+									disabled={selectMenu < 2 ? true : false}
+								>
+									나의 버킷리스트
+								</TodoListBtn>
+								<TodoListBar isSelect={selectMenu}></TodoListBar>
+							</div>
+							<div>
+								<FlowerListBtn
+									isSelect={selectMenu}
+									onClick={changeMenuReverse}
+									disabled={selectMenu === 2 ? true : false}
+								>
+									나의 버킷플라워
+								</FlowerListBtn>
+							</div>
+						</BoardMenu>
+						{selectMenu < 2 ? (
+							<TodoList>
+								{totalList > 0 ? (
+									<TodoListInfo>
+										총 <span>{totalList}개</span>의 버킷리스트 중{' '}
+										<span>{completeList}개</span>가 완료되었습니다.
+									</TodoListInfo>
+								) : (
+									<TodoListInfo>
+										아직 버킷리스트가 작성되지 않았어요! <br />
+										<span>{isUser}</span>님만의 버킷리스트를 작성해보세요!
+									</TodoListInfo>
+								)}
+								<SeparateBar />
+								{totalList > 0
+									? userList.map((list, index) => (
+											<UserPost
+												index={index}
+												list={list}
+												userId={isUser}
+												isOpen={createList}
+												isCompleted={list.isCompleted}
+												key={index}
+											></UserPost>
+									  ))
+									: null}
+							</TodoList>
+						) : (
+							<FlowerList>
+								{rewardsList(themes.branch, 'branch')}
+								{rewardsList(themes.stem, 'stem')}
+								{rewardsList(themes.red, 'red')}
+								{rewardsList(themes.purple, 'purple')}
+								{rewardsList(themes.rounded, 'rounded')}
+								{rewardsList(themes.pointed, 'pointed')}
+							</FlowerList>
+						)}
+					</UserBoard>
+					{createList ? null : (
+						<WriteButtonWrapper>
+							<WriteButton
+								type='image'
+								src={write}
+								onClick={onWrite}
+							></WriteButton>
+						</WriteButtonWrapper>
 					)}
-				</UserBoard>
-				{createList ? null : (
-					<WriteButtonWrapper>
-						<WriteButton
-							type='image'
-							src={write}
-							onClick={onWrite}
-						></WriteButton>
-					</WriteButtonWrapper>
-				)}
-			</PersonalWrapper>
+				</PersonalWrapper>
+
+				{onNameModal ? (
+					<NicknameModal>
+						<div>
+							<div>
+								<div></div>
+								<div>새로운 닉네임을 입력해주세요</div>
+								<input
+									onChange={onChangeName}
+									value={changedName}
+									type='text'
+									placeholder='10자 이내의 한글, 영문, 숫자'
+								/>
+								{ChangedNameAlert ? (
+									changedName.length < 1 ? (
+										<WarnSpan>닉네임을 입력해주세요</WarnSpan>
+									) : changedName.length > 10 ? (
+										<WarnSpan>닉네임은 10자 이하만 입력 가능합니다.</WarnSpan>
+									) : changedName === userName ? (
+										<WarnSpan>변경전과 같은 닉네임 입니다.</WarnSpan>
+									) : (
+										<SucSpan>사용가능한 닉네임 입니다.</SucSpan>
+									)
+								) : null}
+								<ModalBtn>
+									<button onClick={closeModal}>취소</button>
+									<button onClick={updateUserName}>확인</button>
+								</ModalBtn>
+							</div>
+						</div>
+					</NicknameModal>
+				) : null}
+			</BackgroundWrapper>
 			{createList ? (
 				<CreateContainer>
 					<div>
@@ -1679,7 +1643,7 @@ function Personal({ isLogin }) {
 									{onTitleChange ? (
 										title.length > 0 ? (
 											overlapList.length === 0 ? null : (
-												<span>겹치는 버킷리스트가 있어요</span>
+												<span>중복된 이름의 버킷리스트가 있어요</span>
 											)
 										) : (
 											<span>제목 줘</span>
@@ -1748,38 +1712,7 @@ function Personal({ isLogin }) {
 					</div>
 				</CreateContainer>
 			) : null}
-			{onNameModal ? (
-				<NicknameModal>
-					<div>
-						<div>
-							<div></div>
-							<div>새로운 닉네임을 입력해주세요</div>
-							<input
-								onChange={onChangeName}
-								value={changedName}
-								type='text'
-								placeholder='10자 이내의 한글, 영문, 숫자'
-							/>
-							{ChangedNameAlert ? (
-								changedName.length < 1 ? (
-									<WarnSpan>닉네임을 입력해주세요</WarnSpan>
-								) : changedName.length > 10 ? (
-									<WarnSpan>닉네임은 10자 이하만 입력 가능합니다.</WarnSpan>
-								) : changedName === userName ? (
-									<WarnSpan>변경전과 같은 닉네임 입니다.</WarnSpan>
-								) : (
-									<SucSpan>사용가능한 닉네임 입니다.</SucSpan>
-								)
-							) : null}
-							<ModalBtn>
-								<button onClick={closeModal}>취소</button>
-								<button onClick={updateUserName}>확인</button>
-							</ModalBtn>
-						</div>
-					</div>
-				</NicknameModal>
-			) : null}
-		</BackgroundWrapper>
+		</>
 	);
 }
 

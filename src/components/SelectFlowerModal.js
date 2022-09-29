@@ -214,6 +214,14 @@ function SelectFlowerModal({ onModal, onCancel, userId }) {
 	const [flowers, setFlowers] = useState([]);
 	const [leaves, setLeaves] = useState([]);
 	const [swipe, setSwipe] = useState();
+	const themes = {
+		branch: '가지',
+		stem: '줄기',
+		red: '붉은꽃',
+		purple: '보라꽃',
+		rounded: '둥근잎',
+		pointed: '뾰족잎',
+	};
 
 	const loadRewards = async () => {
 		try {
@@ -286,6 +294,36 @@ function SelectFlowerModal({ onModal, onCancel, userId }) {
 		}
 	};
 
+	const rewardsList = (title, theme) => {
+		return (
+			<>
+				<SubTitle>{title}</SubTitle>
+				<RewardsInner>
+					{trunks
+						.filter((arr) => arr.theme === { theme })
+						.map((arr) => (
+							<BranchesWrapper
+								key={arr.id}
+								onClick={() =>
+									selectReward(
+										arr.filename,
+										arr.category,
+										arr.theme,
+										arr.basicangle
+									)
+								}
+							>
+								<img
+									src={`http://localhost:8080/images/${arr.filename}.svg`}
+									alt=''
+								/>
+							</BranchesWrapper>
+						))}
+				</RewardsInner>
+			</>
+		);
+	};
+
 	if (!visible && !animation) return null;
 	return (
 		<>
@@ -336,7 +374,17 @@ function SelectFlowerModal({ onModal, onCancel, userId }) {
 							{trunks
 								.filter((arr) => arr.theme === 'stem')
 								.map((arr) => (
-									<BranchesWrapper key={arr.id}>
+									<BranchesWrapper
+										key={arr.id}
+										onClick={() =>
+											selectReward(
+												arr.filename,
+												arr.category,
+												arr.theme,
+												arr.basicangle
+											)
+										}
+									>
 										<img
 											src={`http://localhost:8080/images/${arr.filename}.svg`}
 											alt=''
@@ -352,7 +400,17 @@ function SelectFlowerModal({ onModal, onCancel, userId }) {
 							{flowers
 								.filter((arr) => arr.theme === 'red')
 								.map((arr) => (
-									<BranchesWrapper key={arr.id}>
+									<BranchesWrapper
+										key={arr.id}
+										onClick={() =>
+											selectReward(
+												arr.filename,
+												arr.category,
+												arr.theme,
+												arr.basicangle
+											)
+										}
+									>
 										<img
 											src={`http://localhost:8080/images/${arr.filename}.svg`}
 											alt=''
@@ -368,7 +426,12 @@ function SelectFlowerModal({ onModal, onCancel, userId }) {
 									<BranchesWrapper
 										key={arr.id}
 										onClick={() =>
-											selectReward(arr.filename, arr.category, arr.theme)
+											selectReward(
+												arr.filename,
+												arr.category,
+												arr.theme,
+												arr.basicangle
+											)
 										}
 									>
 										<img
@@ -386,7 +449,17 @@ function SelectFlowerModal({ onModal, onCancel, userId }) {
 							{leaves
 								.filter((arr) => arr.theme === 'rounded')
 								.map((arr) => (
-									<BranchesWrapper key={arr.id}>
+									<BranchesWrapper
+										key={arr.id}
+										onClick={() =>
+											selectReward(
+												arr.filename,
+												arr.category,
+												arr.theme,
+												arr.basicangle
+											)
+										}
+									>
 										<img
 											src={`http://localhost:8080/images/${arr.filename}.svg`}
 											alt=''
@@ -399,7 +472,17 @@ function SelectFlowerModal({ onModal, onCancel, userId }) {
 							{leaves
 								.filter((arr) => arr.theme === 'pointed')
 								.map((arr) => (
-									<BranchesWrapper key={arr.id}>
+									<BranchesWrapper
+										key={arr.id}
+										onClick={() =>
+											selectReward(
+												arr.filename,
+												arr.category,
+												arr.theme,
+												arr.basicangle
+											)
+										}
+									>
 										<img
 											src={`http://localhost:8080/images/${arr.filename}.svg`}
 											alt=''

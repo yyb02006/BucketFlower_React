@@ -101,4 +101,90 @@ function RotateTest() {
 	);
 }
 
+{
+	/* <Theme>{themes.branch}</Theme>
+							<div>
+								{rewards
+									.filter((arr) => arr.theme === 'branch')
+									.map((arr, index) => (
+										<BranchWrapper
+											key={arr.id}
+											isSelected={
+												rewardsStat[arr.id - 1]
+													? rewardsStat[arr.id - 1].isSelected
+													: false
+											}
+										>
+											{rewardsStat[arr.id - 1] ? (
+												rewardsStat[arr.id - 1].isSelected ? (
+													<RewardsShadow
+														src={`http://localhost:8080/images/${arr.filename}.svg`}
+														alt=''
+													></RewardsShadow>
+												) : null
+											) : null}
+											<RewardsBox
+												draggable={
+													adornment
+														? !displayed
+																.map((keys) => keys.key)
+																.includes(arr.id)
+															? isDraggable
+															: false
+														: false
+												}
+												onDragStart={(e) =>
+													dragStartHandler(
+														e,
+														arr.id,
+														true,
+														'rewards',
+														arr.filename
+													)
+												}
+												onDrag={(e) => dragHandler(e)}
+												onDragEnd={(e) =>
+													dragEndHandler(
+														e,
+														arr.id - 1,
+														rewardsRef.current[arr.id - 1],
+														true,
+														{
+															key: arr.id,
+															userid: arr.userid,
+															filename: arr.filename,
+															angle: 0,
+														},
+														'rewards'
+													)
+												}
+												onDrop={(e) => dropHandler(e)}
+												onDragOver={() => false}
+												used={
+													adornment
+														? displayed
+																.map((keys) => keys.imagekey)
+																.includes(arr.id)
+															? true
+															: dropedRewards
+																	.filter((arr) => !arr === false)
+																	.map((arr) => arr.imagekey)
+																	.includes(arr.id)
+															? true
+															: false
+														: false
+												}
+												ref={(el) => (rewardsRef.current[arr.id - 1] = el)}
+											>
+												<Rewards
+													src={`http://localhost:8080/images/${arr.filename}.svg`}
+													alt=''
+													draggable={false}
+												/>
+											</RewardsBox>
+										</BranchWrapper>
+									))}
+							</div> */
+}
+
 export default RotateTest;

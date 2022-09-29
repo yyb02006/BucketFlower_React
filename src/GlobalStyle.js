@@ -53,6 +53,7 @@ body{
   padding: 0;
   overflow-x: hidden;
   color: #404040;
+  overflow-y: overlay;
 }
 
 div{

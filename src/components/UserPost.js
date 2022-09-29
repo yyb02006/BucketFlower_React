@@ -8,6 +8,17 @@ import closeIcon from '../assets/close_icon.svg';
 import ConfirmModal from './ConfirmModal';
 import SelectFlowerModal from './SelectFlowerModal';
 
+const slideDown = keyframes`
+	0%{
+		transform: translateY(20px);
+		opacity: 50%;
+	}
+	100%{
+		transform: translateY(0px);
+		opacity: 100%;
+	}
+`;
+
 const fadeIn = keyframes`
 	0%{
 		opacity: 0;
@@ -53,6 +64,7 @@ const TitleBox = styled.div`
 const ContentsBox = styled.div`
 	font-size: 0.875rem;
 	font-weight: 300;
+	animation: ${slideDown} 0.2s linear forwards;
 `;
 
 const PostWrapper = styled.div``;
