@@ -328,14 +328,14 @@ const FlowerList = styled.div`
 	height: 520px;
 	overflow-y: overlay;
 	position: relative;
-	& div:nth-child(2) {
+	& > div > div:nth-child(2) {
 		display: flex;
 		flex-wrap: wrap;
 	}
-	& div:nth-child(2) > div {
+	& > div > div:nth-child(2) > div {
 		margin-bottom: 6px;
 	}
-	& div:nth-child(2) > div:not(:nth-child(4n)) {
+	& > div > div:nth-child(2) > div:not(:nth-child(4n)) {
 		margin-right: 6px;
 	}
 `;
@@ -1239,7 +1239,7 @@ function Personal({ isLogin }) {
 
 	const rewardsList = (listTitle, theme) => {
 		return (
-			<>
+			<div>
 				<Theme>
 					{rewards.filter((arr) => arr.theme === theme).length > 0
 						? listTitle
@@ -1317,7 +1317,7 @@ function Personal({ isLogin }) {
 							</BranchWrapper>
 						))}
 				</div>
-			</>
+			</div>
 		);
 	};
 
@@ -1542,7 +1542,7 @@ function Personal({ isLogin }) {
 												list={list}
 												userId={isUser}
 												isOpen={createList}
-												isCompleted={list.isCompleted}
+												select={selectList}
 												key={index}
 											></UserPost>
 									  ))

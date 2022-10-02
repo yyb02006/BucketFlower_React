@@ -5,6 +5,7 @@ import styled, { css, keyframes } from 'styled-components';
 import SeparateBar from './SeparateBar';
 import openIcon from '../assets/open_icon.svg';
 import closeIcon from '../assets/close_icon.svg';
+import checkIcon from '../assets/confirm.svg';
 import ConfirmModal from './ConfirmModal';
 import SelectFlowerModal from './SelectFlowerModal';
 
@@ -53,12 +54,22 @@ const TitleBox = styled.div`
 	& > div > button {
 		padding: 0;
 		border-radius: 0;
-		background-color: #fafafa;
-		color: #404040;
+		background-color: transparent;
+		color: #808080;
 		font-size: 1rem;
 		font-weight: 400;
 		padding-left: 16px;
 	}
+`;
+
+const Completed = styled.div`
+	padding: 0;
+	border-radius: 0;
+	background-color: transparent;
+	color: #808080;
+	font-size: 1rem;
+	font-weight: 400;
+	padding-left: 16px;
 `;
 
 const ContentsBox = styled.div`
@@ -98,14 +109,19 @@ const ModalBackground = styled.div`
 		`}
 `;
 
-const UserPost = function ({ index, list, userId, isOpen, isCompleted }) {
+const Checked = styled.img`
+	position: absolute;
+	margin-left: 8px;
+	margin-top: 6px;
+`;
+
+const UserPost = function ({ index, list, userId, isOpen, select }) {
 	const [post, setPost] = useState(false);
 	const [loadImages, setLoadImages] = useState({});
 	const [onCompleteModal, setOnCompleteModal] = useState(false);
 	const [onSelectFlowerModal, setOnSelectFlowerModal] = useState(false);
 	const [animation, setAnimation] = useState(false);
 	const [visible, setVisible] = useState(onCompleteModal);
-	const [complete, setComplete] = useState(false);
 
 	const showPost = () => {
 		setPost((p) => (p = true));
@@ -150,11 +166,15 @@ const UserPost = function ({ index, list, userId, isOpen, isCompleted }) {
 	const onCancel = () => {
 		setOnCompleteModal((p) => (p = false));
 		setOnSelectFlowerModal((p) => (p = false));
+		select();
 	};
 
 	const onComplete = () => {
 		setOnCompleteModal((p) => (p = true));
 	};
+
+	console.log(list);
+
 	return (
 		<PostWrapper key={index}>
 			<TitleBox>
@@ -171,7 +191,14 @@ const UserPost = function ({ index, list, userId, isOpen, isCompleted }) {
 							<img src={openIcon} alt='' />
 						</button>
 					)}
-					<button onClick={onComplete}>완료</button>
+					{list.isCompleted === 0 ? (
+						<button onClick={onComplete}>완료하기</button>
+					) : (
+						<>
+							<Completed>완료</Completed>
+							<Checked src={checkIcon} alt='' />
+						</>
+					)}
 				</div>
 			</TitleBox>
 			{post ? (
@@ -213,6 +240,7 @@ const UserPost = function ({ index, list, userId, isOpen, isCompleted }) {
 				onModal={onSelectFlowerModal}
 				onCancel={onCancel}
 				userId={userId}
+				listId={list.id}
 			/>
 		</PostWrapper>
 	);

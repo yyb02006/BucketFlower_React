@@ -204,7 +204,7 @@ const BranchesWrapper = styled.button`
 	}
 `;
 
-function SelectFlowerModal({ onModal, onCancel, userId }) {
+function SelectFlowerModal({ onModal, onCancel, userId, listId }) {
 	const [visible, setVisible] = useState(false);
 	const [animation, setAnimation] = useState(onModal);
 	const [tapMenu, setTapMenu] = useState('Trunks');
@@ -287,6 +287,7 @@ function SelectFlowerModal({ onModal, onCancel, userId }) {
 				category: category,
 				theme: theme,
 				basicangle: basicAngle,
+				listid: listId,
 			});
 			onCancel();
 		} catch (error) {

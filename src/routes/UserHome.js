@@ -68,6 +68,9 @@ const GalleryTitle = styled.div`
 		border-bottom: 4px solid #32a797;
 		margin-bottom: 10px;
 	}
+	span {
+		color: #32a797;
+	}
 `;
 
 const GalleryInner = styled.div`
@@ -97,16 +100,21 @@ const HistoryTitle = styled.div`
 		border-bottom: 4px solid #32a797;
 		margin-bottom: 10px;
 	}
+	span {
+		color: #32a797;
+	}
 `;
 
 function UserHome() {
 	const [isUser, setIsUser] = useState('');
+	const [username, setUsername] = useState('');
 	const [displayed, setDisplayed] = useState([]);
 
 	const auth = async () => {
 		try {
 			const req = await axiosInstance.get('http://localhost:8080/authtoken');
 			setIsUser((p) => (p = req.data.id));
+			setUsername((p) => (p = req.data.name));
 		} catch (error) {
 			console.log('auth' + error);
 		}
@@ -164,7 +172,8 @@ function UserHome() {
 			<GalleryWrapper>
 				<GalleryContainer>
 					<GalleryTitle>
-						<div></div>홍길동님의 버킷리스트 갤러리
+						<div></div>
+						<span>{username}</span>님의 버킷리스트 갤러리
 					</GalleryTitle>
 					<GalleryInner>
 						<Gallery />
@@ -174,7 +183,8 @@ function UserHome() {
 			<HistoryWrapper>
 				<HistoryContainer>
 					<HistoryTitle>
-						<div></div>홍길동님의 히스토리
+						<div></div>
+						<span>{username}</span>님의 히스토리
 					</HistoryTitle>
 					<History userid={isUser} />
 				</HistoryContainer>
