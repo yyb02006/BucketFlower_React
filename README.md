@@ -72,3 +72,7 @@ console.log(array.splice(2,1))의 값은 [3]이 된다.
 문제는 단순했는데, onDragEnd시에(여기서는 onDrop을 사용하지 않고 onDragEnd만 사용. onDargOver에 대한 이해가 부족하기도 하고 순서차이 이외에 onDrop과 onDragEnd가 어떤 차이가 있는지 아직 잘 느끼지 못함.) 불러오는 useRef의 배열넘버가 index로 되어있어 purple category의 첫 번재 엘리먼트는 index 0을 불러왔고, 이는 곧 ref배열에서 첫번째 즉, 전체에서 첫 번째인 redbranch를 불러오는 결과가 되었다. 같은 방식으로 branch category의 마지막 엘리먼트는 본인의 index 7을 불러왔고, 8번째로 추가된 purple category의 첫 번째 엘리먼트를 불러온 것이다.
 
 Personal.js에 도저히 읽기 힘들 정도로 모든 코드가 때려박아져 있는 게 결국 화근이 됐다. 다른 컴포넌트나 하다못해 유틸함수가 나누어져 있었더라면 생각보다 금방 찾을 수 있었을지도 모른다. 코드가 1500줄이 되어버리니 index넘버를 arr - 1로 수정하는 과정에서 ref를 건너뛰게 된 것이다.
+
+## 2022-10-04 Issues
+
+플라워 컨테이너를 다시 확인해보니 로테이트된 엘리먼트는 left와 top의 기준점이 달라져서 저장 후 displayed로 rewards를 불러올 때 위치가 바뀌는 현상이 있었다. 회전된엘리먼트는 자신만의 left와top을 갖는 것이 아닌 회전 이전을 기준으로 left와 top이 결정되는데 displayed에서 이 기준을 제대로 잡아줘야 한다. 사실 ondrop함수를 설계할 때 잘 모르고 설계해서 일어난 버그로, e.target.offsetLeft + e.clientX - dropedLocation.clientX로 회전 이전 기준으로 위치를 받아올 수 있었는데 posx: e.clientX + clientLeft - boxLeft로 사용해버리는 바람에 이러한 문제가 생긴 것.

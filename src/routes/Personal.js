@@ -97,6 +97,7 @@ const FlowerInner = styled.div`
 	filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
 	background-color: #fafafa;
 	position: relative;
+	overflow: hidden;
 `;
 
 const FlowerImgBox = styled.div`
@@ -1004,7 +1005,10 @@ function Personal({ isLogin }) {
 				angle: info.angle,
 			};
 		}
-		console.log(rewards.filter((arr) => arr.id - 1 === index)[0].basicangle);
+		console.log(
+			e.target.offsetLeft + e.clientX - dropedLocation.clientX,
+			clientTop
+		);
 		if (
 			e.clientX + clientLeft > boxLeft &&
 			e.clientX + clientRight < boxRight &&
@@ -1017,6 +1021,10 @@ function Personal({ isLogin }) {
 				setDropedRewards((p) => (p = newDroped));
 				console.log(dropedRewards);
 			} else {
+				newDroped[index].posx =
+					e.target.offsetLeft + e.clientX - dropedLocation.clientX;
+				newDroped[index].posy =
+					e.target.offsetTop + e.clientY - dropedLocation.clientY;
 				e.target.style.left = `${
 					e.target.offsetLeft + e.clientX - dropedLocation.clientX
 				}px`;
@@ -1236,6 +1244,15 @@ function Personal({ isLogin }) {
 	useEffect(() => {
 		setContainerWidth(containerRef.current.offsetWidth);
 	});
+
+	useEffect(() => {
+		if (dropedRewards.length) {
+			console.log(dropedRewards);
+		} else if (displayed.length) {
+			console.log(displayed);
+			console.log(dropedRewards);
+		}
+	}, [dropedRewards, displayed]);
 
 	const rewardsList = (listTitle, theme) => {
 		return (
@@ -1459,7 +1476,7 @@ function Personal({ isLogin }) {
 								</Link>
 							</InnerLogo>
 							<Adornment onClick={onAdornment}>
-								{adornment ? '그만꾸미기' : '꾸미기'}
+								{adornment ? '저장' : '수정'}
 							</Adornment>
 						</FlowerInner>
 					</FlowerContainer>

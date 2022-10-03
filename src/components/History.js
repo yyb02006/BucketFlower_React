@@ -148,10 +148,12 @@ function History({ userid }) {
 							</Contents>
 							<DateContainer>
 								<DateInner>
-									{date.SuccessDate.replace('15:00:00.000Z', '')
-										.replace('-', '년 ')
-										.replace('-', '월 ')
-										.replace('T', '일')}
+									{date.SuccessDate
+										? date.SuccessDate.replace('15:00:00.000Z', '')
+												.replace('-', '년 ')
+												.replace('-', '월 ')
+												.replace('T', '일')
+										: null}
 								</DateInner>
 								<Indicator>
 									<Bar isEnd={byDate.length - 1 === index}></Bar>

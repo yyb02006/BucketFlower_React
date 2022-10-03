@@ -173,8 +173,6 @@ const UserPost = function ({ index, list, userId, isOpen, select }) {
 		setOnCompleteModal((p) => (p = true));
 	};
 
-	console.log(list);
-
 	return (
 		<PostWrapper key={index}>
 			<TitleBox>
