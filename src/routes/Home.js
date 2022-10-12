@@ -5,6 +5,8 @@ import { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosConfig';
+import lottie from 'lottie-web';
+import { ReactMediaRecorder } from 'react-media-recorder';
 
 const MoveBox = keyframes`
 	0%{
@@ -94,6 +96,11 @@ const IntroWrapper = styled.div`
 
 const IntroCard = styled.div``;
 
+const LottieWrapper = styled.div`
+	position: absolute;
+	top: 100px;
+`;
+
 function Home() {
 	const [offsetY, setOffsetY] = useState('');
 	const [cardMove, setCardMove] = useState(false);
@@ -147,8 +154,35 @@ function Home() {
 		}
 	}, []);
 	// console.log(cardMove);
+
+	const likeDivIndex1 = useRef();
+	const likeDivIndex2 = useRef();
+
+	useEffect(() => {
+		const ani = (el, json) =>
+			lottie.loadAnimation({
+				container: el, // Required
+				renderer: 'svg', // Required
+				loop: true, // Optional
+				autoplay: true, // Optional
+				animationData: require(`../json/${json}`),
+				rendererSettings: {
+					filterSize: {
+						width: '200%',
+						height: '200%',
+						x: '-50%',
+						y: '-50%',
+					},
+				},
+			});
+
+		ani(likeDivIndex1.current, 'left_top_index_0.json');
+		ani(likeDivIndex2.current, 'left_top_index_1.json');
+	}, []);
+
 	return (
 		<div>
+			<LottieWrapper ref={likeDivIndex1}></LottieWrapper>
 			<Background />
 			<Header />
 			<Main>
@@ -163,6 +197,7 @@ function Home() {
 				<IntroCard />
 				<IntroCard>{offsetY}</IntroCard>
 			</IntroWrapper>
+			<LottieWrapper ref={likeDivIndex2}></LottieWrapper>
 		</div>
 	);
 }

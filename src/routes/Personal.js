@@ -712,6 +712,8 @@ function Personal({ isLogin }) {
 		purple: '보라꽃',
 		rounded: '둥근잎',
 		pointed: '뾰족잎',
+		single: 'single',
+		multiple: 'multiple',
 	};
 	let rewardsStatArr = [...rewardsStat];
 	let newDroped = [...dropedRewards];
@@ -861,6 +863,10 @@ function Personal({ isLogin }) {
 		}
 	}, [selectMenu]);
 
+	useEffect(() => {
+		loadDisplayed();
+	}, [isChange]);
+
 	//onEvent func 처리
 	const changeMenu = () => {
 		setSelectMenu((p) => (p = 1));
@@ -970,7 +976,18 @@ function Personal({ isLogin }) {
 		return;
 	};
 
-	const dragEndHandler = (e, index, ref, isReward, info, from) => {
+	const dragEndHandler = (
+		e,
+		index,
+		ref,
+		isReward,
+		info,
+		from,
+		basicLeft,
+		basicTop,
+		basicWidth,
+		basicHeight
+	) => {
 		if (isReward) {
 			rewardsStatArr[info.key - 1] = { isSelected: false };
 			setRewardsStat((p) => (p = rewardsStatArr));
@@ -1003,6 +1020,10 @@ function Personal({ isLogin }) {
 				posy: e.clientY + clientTop - boxTop,
 				from: from,
 				angle: info.angle,
+				basicleft: basicLeft,
+				basictop: basicTop,
+				basicwidth: basicWidth,
+				basicheight: basicHeight,
 			};
 		}
 		console.log(
@@ -1087,7 +1108,9 @@ function Personal({ isLogin }) {
 			x: location.clientX - boxCenter.x,
 		};
 		let angle = Math.floor(Math.atan2(arcPoints.y, arcPoints.x) * radians);
-		let startAngle = 180 - rewards[index].basicangle;
+		console.log(rewards, rewards.filter((arr) => arr.id === index + 1)[0]);
+		let startAngle =
+			180 - rewards.filter((arr) => arr.id === index + 1)[0].basicangle;
 		console.log(angle + startAngle, index);
 
 		setRotateAngle((p) => (p = angle + startAngle));
@@ -1150,8 +1173,9 @@ function Personal({ isLogin }) {
 				y: location.clientY - boxCenter.y,
 			};
 			let angle = Math.floor(Math.atan2(arcPoints.y, arcPoints.x) * radians);
-			let startAngle = 180 - rewards[elIndex].basicangle;
-			console.log(rewards[elIndex].basicangle);
+			console.log(elIndex);
+			let startAngle =
+				180 - rewards.filter((arr) => arr.id === elIndex + 1)[0].basicangle;
 
 			setRotateAngle((p) => (p = angle + startAngle));
 			displayedRef.current[
@@ -1254,6 +1278,12 @@ function Personal({ isLogin }) {
 		}
 	}, [dropedRewards, displayed]);
 
+	useEffect(() => {
+		if (rewards.length > 0) {
+			console.log(rewards);
+		}
+	}, [rewards]);
+
 	const rewardsList = (listTitle, theme) => {
 		return (
 			<div>
@@ -1306,7 +1336,11 @@ function Personal({ isLogin }) {
 												filename: arr.filename,
 												angle: 0,
 											},
-											'rewards'
+											'rewards',
+											arr.basicleft,
+											arr.basictop,
+											arr.basicwidth,
+											arr.basicheight
 										)
 									}
 									onDrop={(e) => dropHandler(e)}
@@ -1351,6 +1385,28 @@ function Personal({ isLogin }) {
 					>
 						<FlowerInner>
 							<FlowerImgBox>
+								<div
+									style={{
+										position: 'absolute',
+										top: '500px',
+										left: '',
+										width: '230px',
+										height: '230px',
+										padding: '0',
+										margin: '0',
+									}}
+								></div>
+								<div
+									style={{
+										position: 'relative',
+										top: '500px',
+										left: '230px',
+										padding: '0',
+										margin: '0',
+									}}
+								>
+									<img src='http://localhost:8080/images/branch.svg' alt='' />
+								</div>
 								{dropedRewards
 									.filter((arr) => !arr === false)
 									.filter(
@@ -1385,7 +1441,11 @@ function Personal({ isLogin }) {
 														filename: arr.filename,
 														angle: arr.angle,
 													},
-													'droped'
+													'droped',
+													arr.basicleft,
+													arr.basictop,
+													arr.basicwidth,
+													arr.basicheight
 												)
 											}
 											ref={(el) =>
@@ -1443,7 +1503,11 @@ function Personal({ isLogin }) {
 													filename: arr.filename,
 													angle: arr.angle,
 												},
-												'displayed'
+												'displayed',
+												arr.basicleft,
+												arr.basictop,
+												arr.basicwidth,
+												arr.basicheight
 											)
 										}
 										ref={(el) => (displayedRef.current[arr.imagekey - 1] = el)}
@@ -1573,18 +1637,22 @@ function Personal({ isLogin }) {
 								{rewardsList(themes.purple, 'purple')}
 								{rewardsList(themes.rounded, 'rounded')}
 								{rewardsList(themes.pointed, 'pointed')}
+								{rewardsList(themes.single, 'single')}
+								{rewardsList(themes.multiple, 'vivid')}
 							</FlowerList>
 						)}
 					</UserBoard>
-					{createList ? null : (
-						<WriteButtonWrapper>
-							<WriteButton
-								type='image'
-								src={write}
-								onClick={onWrite}
-							></WriteButton>
-						</WriteButtonWrapper>
-					)}
+					{!createList ? (
+						!(selectMenu === 2) ? (
+							<WriteButtonWrapper>
+								<WriteButton
+									type='image'
+									src={write}
+									onClick={onWrite}
+								></WriteButton>
+							</WriteButtonWrapper>
+						) : null
+					) : null}
 				</PersonalWrapper>
 
 				{onNameModal ? (

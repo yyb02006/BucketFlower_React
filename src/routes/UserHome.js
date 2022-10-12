@@ -5,10 +5,11 @@ import History from '../components/History';
 import React from 'react';
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import axiosInstance from '../utils/axiosConfig';
 import { useEffect } from 'react';
+import lottie from 'lottie-web';
 
 const MainWrapper = styled.div`
 	width: 580px;
@@ -28,6 +29,7 @@ const InnerContainer = styled.div`
 	height: calc(100% - 100px);
 	min-height: 800px;
 	max-height: 900px;
+	min-width: 580px;
 	background-color: #fafafa;
 `;
 
@@ -36,9 +38,19 @@ const DisplayedContainer = styled.div`
 	transform: translate(0, 0) rotate(${(props) => props.angle});
 	left: ${(props) => props.left};
 	top: ${(props) => props.top};
+	width: ${(props) => props.width};
+	height: ${(props) => props.height};
 `;
 
 const DisplayedImg = styled.img``;
+
+const DisplayedDiv = styled.div`
+	position: absolute;
+	width: 200px;
+	height: 200px;
+	left: ${(props) => props.left};
+	top: ${(props) => props.top};
+`;
 
 const ToPersonalBtn = styled.button`
 	width: calc(100% - 60px);
@@ -109,6 +121,7 @@ function UserHome() {
 	const [isUser, setIsUser] = useState('');
 	const [username, setUsername] = useState('');
 	const [displayed, setDisplayed] = useState([]);
+	const displayedRef = useRef([]);
 
 	const auth = async () => {
 		try {
@@ -141,6 +154,28 @@ function UserHome() {
 
 	useEffect(() => {
 		console.log(displayed);
+		if (displayed.length > 0) {
+			const ani = (el, json) =>
+				lottie.loadAnimation({
+					container: el, // Required
+					renderer: 'svg', // Required
+					loop: true, // Optional
+					autoplay: true, // Optional
+					animationData: require(`../json/${json}.json`),
+					rendererSettings: {
+						filterSize: {
+							width: '200%',
+							height: '200%',
+							x: '-50%',
+							y: '-50%',
+						},
+					},
+				});
+
+			displayed.map((arr, index) =>
+				ani(displayedRef.current[index], `${arr.filename}`)
+			);
+		}
 	}, [displayed]);
 
 	return (
@@ -149,19 +184,48 @@ function UserHome() {
 			<Header />
 			<MainWrapper>
 				<InnerContainer>
+					<div
+						style={{
+							position: 'absolute',
+							top: '500px',
+							left: '',
+							width: '230px',
+							height: '230px',
+							padding: '0',
+							margin: '0',
+						}}
+					></div>
+					<div
+						style={{
+							position: 'relative',
+							top: '500px',
+							left: '230px',
+							padding: '0',
+							margin: '0',
+						}}
+					>
+						<img src='http://localhost:8080/images/branch.svg' alt='' />
+					</div>
 					{displayed.map((arr, index) => (
 						<DisplayedContainer
 							key={arr.id}
 							left={`${arr.posx}px`}
 							top={`${arr.posy}px`}
 							angle={`${arr.angle}deg`}
+							width={`${arr.basicwidth}px`}
+							height={`${arr.basicheight}px`}
 							draggable={false}
 						>
-							<DisplayedImg
+							{/* <DisplayedImg
 								src={`http://localhost:8080/images/${arr.filename}.svg`}
 								alt=''
 								draggable={false}
-							/>
+							/> */}
+							<DisplayedDiv
+								left={`${arr.basicleft}px`}
+								top={`${arr.basictop}px`}
+								ref={(el) => (displayedRef.current[index] = el)}
+							></DisplayedDiv>
 						</DisplayedContainer>
 					))}
 				</InnerContainer>

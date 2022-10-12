@@ -316,6 +316,7 @@ function CreatedList({ index, list, userId, isOpen, setIsChange, fullList }) {
 	};
 	const onDelete = () => {
 		deleteList();
+		setIsChange((p) => !p);
 		closeDelete();
 	};
 	useEffect(() => {
