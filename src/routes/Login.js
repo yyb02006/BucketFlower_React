@@ -104,7 +104,7 @@ function Login() {
 	const confirmLogin = async (e) => {
 		e.preventDefault();
 		try {
-			const req = await axios.post('http://localhost:8080/login', {
+			const req = await axios.post(`${process.env.REACT_APP_BASE_URL}/login`, {
 				id: userId,
 				password: userPassword,
 			});

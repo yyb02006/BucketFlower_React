@@ -326,7 +326,14 @@ const FlowerList = styled.div`
 	margin-top: 44px;
 	animation: ${MoveBox} 0.5s;
 	animation-timing-function: ease-in-out(0.42, 0, 0.58, 1);
-	height: 520px;
+	${(props) =>
+		props.DomHeight
+			? css`
+					height: 850px;
+			  `
+			: css`
+					height: 520px;
+			  `}
 	overflow-y: overlay;
 	position: relative;
 	& > div > div:nth-child(2) {
@@ -723,7 +730,9 @@ function Personal({ isLogin }) {
 
 	const auth = async () => {
 		try {
-			const req = await axiosInstance.get('http://localhost:8080/authtoken');
+			const req = await axiosInstance.get(
+				`${process.env.REACT_APP_BASE_URL}/authtoken`
+			);
 			// console.log(req.data.id);
 			setIsUser((p) => (p = req.data.id));
 		} catch (error) {
@@ -733,9 +742,12 @@ function Personal({ isLogin }) {
 
 	const selectList = async () => {
 		try {
-			const req = await axios.post('http://localhost:8080/userList', {
-				id: isUser,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/userList`,
+				{
+					id: isUser,
+				}
+			);
 			setTotalList(req.data.length);
 			setUserList(req.data);
 		} catch (error) {
@@ -745,9 +757,12 @@ function Personal({ isLogin }) {
 
 	const selectUserImage = async () => {
 		try {
-			const req = await axios.post('http://localhost:8080/userprofile', {
-				userid: isUser,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/userprofile`,
+				{
+					userid: isUser,
+				}
+			);
 			setUserImageName((p) => (p = req.data[0].userimage));
 		} catch (error) {
 			console.log(error);
@@ -756,7 +771,7 @@ function Personal({ isLogin }) {
 
 	const selectUser = async () => {
 		try {
-			const req = await axios.post('http://localhost:8080/users', {
+			const req = await axios.post(`${process.env.REACT_APP_BASE_URL}/users`, {
 				userid: isUser,
 			});
 			setUserName(req.data[0].usernickname);
@@ -767,9 +782,12 @@ function Personal({ isLogin }) {
 
 	const loadUserRewards = async () => {
 		try {
-			const req = await axios.post('http://localhost:8080/selectreward', {
-				userid: isUser,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/selectreward`,
+				{
+					userid: isUser,
+				}
+			);
 			setRewards(req.data);
 		} catch (error) {
 			console.log(error);
@@ -779,10 +797,13 @@ function Personal({ isLogin }) {
 	const submitDisplayed = async () => {
 		console.log(dropedRewards);
 		try {
-			const req = await axios.post('http://localhost:8080/submitdisplayed', {
-				displayed: dropedRewards,
-				userid: isUser,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/submitdisplayed`,
+				{
+					displayed: dropedRewards,
+					userid: isUser,
+				}
+			);
 			loadDisplayed();
 			setDropedRewards((p) => (p = []));
 		} catch (error) {
@@ -792,9 +813,12 @@ function Personal({ isLogin }) {
 
 	const loadDisplayed = async () => {
 		try {
-			const req = await axios.post('http://localhost:8080/loaddisplayed', {
-				userid: isUser,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/loaddisplayed`,
+				{
+					userid: isUser,
+				}
+			);
 			setDisplayed((p) => (p = req.data));
 		} catch (error) {
 			console.log(error);
@@ -803,10 +827,13 @@ function Personal({ isLogin }) {
 
 	const deleteDisplayed = async (key, index) => {
 		try {
-			const req = await axios.post('http://localhost:8080/deletedisplayed', {
-				userid: isUser,
-				imagekey: key,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/deletedisplayed`,
+				{
+					userid: isUser,
+					imagekey: key,
+				}
+			);
 			//empty는 undefined로 처리가 되는데, 이걸 setState메서드나 콘솔로 불러오면 즉, 함수의 인자로 넣으면
 			newDroped.splice(key - 1, 1, undefined);
 			setDropedRewards((p) => (p = newDroped));
@@ -910,7 +937,7 @@ function Personal({ isLogin }) {
 
 	const Logout = async () => {
 		try {
-			const req = await axios.get('http://localhost:8080/logout');
+			const req = await axios.get(`${process.env.REACT_APP_BASE_URL}/logout`);
 			move('/');
 		} catch (error) {
 			console.log(error);
@@ -1213,7 +1240,7 @@ function Personal({ isLogin }) {
 			imgData.append('author', isUser);
 			images.map((image) => imgData.append('img', image.image));
 			const req = await axios.post(
-				`http://localhost:8080/userThumbnail`,
+				`${process.env.REACT_APP_BASE_URL}/userThumbnail`,
 				imgData,
 				{ headers: { 'Content-Type': 'multipart/form-data' } }
 			);
@@ -1245,7 +1272,7 @@ function Personal({ isLogin }) {
 		profileData.append('userid', isUser);
 		profileData.append('img', image);
 		const req = await axios.post(
-			`http://localhost:8080/userprofileimage`,
+			`${process.env.REACT_APP_BASE_URL}/userprofileimage`,
 			profileData,
 			{ headers: { 'Content-Type': 'multipart/form-data' } }
 		);
@@ -1254,10 +1281,13 @@ function Personal({ isLogin }) {
 
 	const updateUserName = async () => {
 		try {
-			const req = await axios.post(`http://localhost:8080/changeusernickname`, {
-				id: isUser,
-				name: changedName,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/changeusernickname`,
+				{
+					id: isUser,
+					name: changedName,
+				}
+			);
 			setUserName((p) => (p = changedName));
 			closeModal();
 		} catch (error) {
@@ -1287,11 +1317,9 @@ function Personal({ isLogin }) {
 	const rewardsList = (listTitle, theme) => {
 		return (
 			<div>
-				<Theme>
-					{rewards.filter((arr) => arr.theme === theme).length > 0
-						? listTitle
-						: null}
-				</Theme>
+				{rewards.filter((arr) => arr.theme === theme).length > 0 ? (
+					<Theme>{listTitle}</Theme>
+				) : null}
 				<div>
 					{rewards
 						.filter((arr) => arr.theme === theme)
@@ -1307,7 +1335,7 @@ function Personal({ isLogin }) {
 								{rewardsStat[arr.id - 1] ? (
 									rewardsStat[arr.id - 1].isSelected ? (
 										<RewardsShadow
-											src={`http://localhost:8080/images/${arr.filename}.svg`}
+											src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.svg`}
 											alt=''
 										></RewardsShadow>
 									) : null
@@ -1360,7 +1388,7 @@ function Personal({ isLogin }) {
 									ref={(el) => (rewardsRef.current[arr.id - 1] = el)}
 								>
 									<Rewards
-										src={`http://localhost:8080/images/${arr.filename}.svg`}
+										src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.svg`}
 										alt=''
 										draggable={false}
 									/>
@@ -1405,7 +1433,10 @@ function Personal({ isLogin }) {
 										margin: '0',
 									}}
 								>
-									<img src='http://localhost:8080/images/branch.svg' alt='' />
+									<img
+										src={`${process.env.REACT_APP_BASE_URL}/images/branch.svg`}
+										alt=''
+									/>
 								</div>
 								{dropedRewards
 									.filter((arr) => !arr === false)
@@ -1453,7 +1484,7 @@ function Personal({ isLogin }) {
 											}
 										>
 											<DisplayedImg
-												src={`http://localhost:8080/images/${arr.filename}.svg`}
+												src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.svg`}
 												alt=''
 												draggable={false}
 											/>
@@ -1513,7 +1544,7 @@ function Personal({ isLogin }) {
 										ref={(el) => (displayedRef.current[arr.imagekey - 1] = el)}
 									>
 										<DisplayedImg
-											src={`http://localhost:8080/images/${arr.filename}.svg`}
+											src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.svg`}
 											alt=''
 											draggable={false}
 										/>
@@ -1552,7 +1583,7 @@ function Personal({ isLogin }) {
 										userImageName
 											? userImageName === 'person96'
 												? person96
-												: `http://localhost:8080/${isUser}/profile/${userImageName}`
+												: `${process.env.REACT_APP_BASE_URL}/${isUser}/profile/${userImageName}`
 											: null
 									}
 									alt=''
@@ -1571,7 +1602,7 @@ function Personal({ isLogin }) {
 								/>
 							</UserPictureWrapper>
 							<div>
-								<span>{isUser}</span>님, 환영합니다!
+								<span>{userName}</span>님, 환영합니다!
 							</div>
 							<div>
 								<span onClick={openModal}>닉네임변경</span>
@@ -1630,7 +1661,7 @@ function Personal({ isLogin }) {
 									: null}
 							</TodoList>
 						) : (
-							<FlowerList>
+							<FlowerList DomHeight={adornment}>
 								{rewardsList(themes.branch, 'branch')}
 								{rewardsList(themes.stem, 'stem')}
 								{rewardsList(themes.red, 'red')}

@@ -131,10 +131,13 @@ const UserPost = function ({ index, list, userId, isOpen, select }) {
 	};
 	const loadImg = async () => {
 		try {
-			const req = await axios.post('http://localhost:8080/loadimage', {
-				title: list.Title,
-				userId: userId,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/loadimage`,
+				{
+					title: list.Title,
+					userId: userId,
+				}
+			);
 			setLoadImages((p) => (p = req.data));
 		} catch (error) {
 			console.log(error);
@@ -205,7 +208,7 @@ const UserPost = function ({ index, list, userId, isOpen, select }) {
 					<PhotoContainer>
 						{loadImages.map((loadImage) => (
 							<img
-								src={`http://localhost:8080/${userId}/${list.Title}/${loadImage.FileName}`}
+								src={`${process.env.REACT_APP_BASE_URL}/${userId}/${list.Title}/${loadImage.FileName}`}
 								alt=''
 								key={loadImage.id}
 							/>

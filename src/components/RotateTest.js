@@ -118,7 +118,7 @@ function RotateTest() {
 											{rewardsStat[arr.id - 1] ? (
 												rewardsStat[arr.id - 1].isSelected ? (
 													<RewardsShadow
-														src={`http://localhost:8080/images/${arr.filename}.svg`}
+														src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.svg`}
 														alt=''
 													></RewardsShadow>
 												) : null
@@ -177,7 +177,7 @@ function RotateTest() {
 												ref={(el) => (rewardsRef.current[arr.id - 1] = el)}
 											>
 												<Rewards
-													src={`http://localhost:8080/images/${arr.filename}.svg`}
+													src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.svg`}
 													alt=''
 													draggable={false}
 												/>

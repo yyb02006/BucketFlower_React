@@ -76,3 +76,7 @@ Personal.js에 도저히 읽기 힘들 정도로 모든 코드가 때려박아�
 ## 2022-10-04 Issues
 
 플라워 컨테이너를 다시 확인해보니 로테이트된 엘리먼트는 left와 top의 기준점이 달라져서 저장 후 displayed로 rewards를 불러올 때 위치가 바뀌는 현상이 있었다. 회전된엘리먼트는 자신만의 left와top을 갖는 것이 아닌 회전 이전을 기준으로 left와 top이 결정되는데 displayed에서 이 기준을 제대로 잡아줘야 한다. 사실 ondrop함수를 설계할 때 잘 모르고 설계해서 일어난 버그로, e.target.offsetLeft + e.clientX - dropedLocation.clientX로 회전 이전 기준으로 위치를 받아올 수 있었는데 posx: e.clientX + clientLeft - boxLeft로 사용해버리는 바람에 이러한 문제가 생긴 것.
+
+## 2022-10-25 Issues
+
+styled-component에서 props를 설정할 때 height, width 같은 속성값의 이름을 그대로 사용하지 말자. waring received 'true' for non-boolean attribute :: 같은 에러메세지가 뜰 수 있다.

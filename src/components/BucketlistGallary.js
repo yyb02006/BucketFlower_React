@@ -104,7 +104,9 @@ function Gallery() {
 
 	const auth = async () => {
 		try {
-			const req = await axiosInstance.get('http://localhost:8080/authtoken');
+			const req = await axiosInstance.get(
+				`${process.env.REACT_APP_BASE_URL}/authtoken`
+			);
 			setIsUser((p) => (p = req.data.id));
 		} catch (error) {
 			console.log('auth' + error);
@@ -113,9 +115,12 @@ function Gallery() {
 
 	const loadGallary = async () => {
 		try {
-			const req = await axios.post('http://localhost:8080/gallary', {
-				userid: isUser,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/gallary`,
+				{
+					userid: isUser,
+				}
+			);
 			setImages((p) => (p = req.data));
 		} catch (error) {
 			console.log(error);
@@ -179,7 +184,7 @@ function Gallery() {
 								.map((image) => (
 									<Images key={image.id}>
 										<img
-											src={`http://localhost:8080/${isUser}/${image.Title}/${image.FileName}`}
+											src={`${process.env.REACT_APP_BASE_URL}/${isUser}/${image.Title}/${image.FileName}`}
 											alt=''
 										/>
 									</Images>

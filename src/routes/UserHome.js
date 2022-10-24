@@ -2,6 +2,7 @@ import Background from '../components/Background';
 import Header from '../components/Header';
 import Gallery from '../components/BucketlistGallary';
 import History from '../components/History';
+import Footer from '../components/Footer';
 import React from 'react';
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
@@ -10,6 +11,8 @@ import axios from 'axios';
 import axiosInstance from '../utils/axiosConfig';
 import { useEffect } from 'react';
 import lottie from 'lottie-web';
+import RM from '../assets/right_middle.png';
+import LB from '../assets/left_bottom.png';
 
 const MainWrapper = styled.div`
 	width: 580px;
@@ -117,15 +120,37 @@ const HistoryTitle = styled.div`
 	}
 `;
 
+const LottieWrapper = styled.div`
+	position: absolute;
+	top: 100px;
+	left: -150px;
+`;
+
+const RightMiddle = styled.img`
+	position: absolute;
+	top: 1300px;
+	right: -220px;
+`;
+
+const LeftBottom = styled.img`
+	position: absolute;
+	top: 2030px;
+	left: -90px;
+`;
+
 function UserHome() {
 	const [isUser, setIsUser] = useState('');
 	const [username, setUsername] = useState('');
 	const [displayed, setDisplayed] = useState([]);
 	const displayedRef = useRef([]);
+	const likeDivIndex1 = useRef();
+	const likeDivIndex2 = useRef();
 
 	const auth = async () => {
 		try {
-			const req = await axiosInstance.get('http://localhost:8080/authtoken');
+			const req = await axiosInstance.get(
+				`${process.env.REACT_APP_BASE_URL}/authtoken`
+			);
 			setIsUser((p) => (p = req.data.id));
 			setUsername((p) => (p = req.data.name));
 		} catch (error) {
@@ -135,9 +160,12 @@ function UserHome() {
 
 	const loadDisplayed = async () => {
 		try {
-			const req = await axios.post('http://localhost:8080/loaddisplayed', {
-				userid: isUser,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/loaddisplayed`,
+				{
+					userid: isUser,
+				}
+			);
 			setDisplayed((p) => (p = req.data));
 		} catch (error) {
 			console.log(error);
@@ -178,9 +206,33 @@ function UserHome() {
 		}
 	}, [displayed]);
 
+	useEffect(() => {
+		const ani = (el, json) =>
+			lottie.loadAnimation({
+				container: el, // Required
+				renderer: 'svg', // Required
+				loop: true, // Optional
+				autoplay: true, // Optional
+				animationData: require(`../json/${json}`),
+				rendererSettings: {
+					filterSize: {
+						width: '200%',
+						height: '200%',
+						x: '-50%',
+						y: '-50%',
+					},
+				},
+			});
+
+		ani(likeDivIndex1.current, 'left_top_index_0.json');
+		ani(likeDivIndex2.current, 'left_top_index_1.json');
+	}, []);
+
 	return (
 		<div>
-			<Background />
+			<LottieWrapper ref={likeDivIndex1}></LottieWrapper>
+			<LottieWrapper ref={likeDivIndex2}></LottieWrapper>
+			<Background height={3000} />
 			<Header />
 			<MainWrapper>
 				<InnerContainer>
@@ -204,7 +256,10 @@ function UserHome() {
 							margin: '0',
 						}}
 					>
-						<img src='http://localhost:8080/images/branch.svg' alt='' />
+						<img
+							src={`${process.env.REACT_APP_BASE_URL}/images/branch.svg`}
+							alt=''
+						/>
 					</div>
 					{displayed.map((arr, index) => (
 						<DisplayedContainer
@@ -217,7 +272,7 @@ function UserHome() {
 							draggable={false}
 						>
 							{/* <DisplayedImg
-								src={`http://localhost:8080/images/${arr.filename}.svg`}
+								src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.svg`}
 								alt=''
 								draggable={false}
 							/> */}
@@ -253,6 +308,9 @@ function UserHome() {
 					<History userid={isUser} />
 				</HistoryContainer>
 			</HistoryWrapper>
+			<Footer margin={350}></Footer>
+			<RightMiddle src={RM} alt=''></RightMiddle>
+			<LeftBottom src={LB} alt=''></LeftBottom>
 		</div>
 	);
 }

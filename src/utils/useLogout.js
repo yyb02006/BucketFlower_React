@@ -7,7 +7,7 @@ function useLogout() {
 
 	const logout = async () => {
 		try {
-			const req = await axios.get('http://localhost:8080/logout');
+			const req = await axios.get(`${process.env.REACT_APP_BASE_URL}/logout`);
 			move('/');
 		} catch (error) {
 			console.log(error);

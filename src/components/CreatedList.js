@@ -194,10 +194,13 @@ function CreatedList({ index, list, userId, isOpen, setIsChange, fullList }) {
 
 	const loadImg = async () => {
 		try {
-			const req = await axios.post('http://localhost:8080/loadimage', {
-				title: list.Title,
-				userId: userId,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/loadimage`,
+				{
+					title: list.Title,
+					userId: userId,
+				}
+			);
 			setLoadImages((p) => (p = req.data));
 			setPrimalImages((p) => (p = req.data));
 		} catch (error) {
@@ -271,7 +274,7 @@ function CreatedList({ index, list, userId, isOpen, setIsChange, fullList }) {
 			images.map((image) => modifiedData.append('img', image.image));
 			try {
 				const req = await axios.post(
-					`http://localhost:8080/updatepostlist`,
+					`${process.env.REACT_APP_BASE_URL}/updatepostlist`,
 					modifiedData,
 					{ headers: { 'Content-Type': 'multipart/form-data' } }
 				);
@@ -297,10 +300,13 @@ function CreatedList({ index, list, userId, isOpen, setIsChange, fullList }) {
 	};
 	const deleteList = async () => {
 		try {
-			const req = await axios.post(`http://localhost:8080/deletelist`, {
-				id: userId,
-				title: list.Title,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/deletelist`,
+				{
+					id: userId,
+					title: list.Title,
+				}
+			);
 		} catch (error) {
 			console.log(error);
 		}
@@ -377,7 +383,7 @@ function CreatedList({ index, list, userId, isOpen, setIsChange, fullList }) {
 								{loadImages.map((loadImage, index) => (
 									<div key={loadImage.id}>
 										<img
-											src={`http://localhost:8080/${userId}/${list.Title}/${loadImage.FileName}`}
+											src={`${process.env.REACT_APP_BASE_URL}/${userId}/${list.Title}/${loadImage.FileName}`}
 											alt=''
 										/>
 										<ImgDelButton

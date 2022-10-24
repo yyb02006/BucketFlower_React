@@ -146,7 +146,9 @@ function Signup() {
 	//axios 호출
 	const checkIdOverlap = async () => {
 		try {
-			const resp = await axios.post('http://localhost:8080/check', { id: id });
+			const resp = await axios.post(`${process.env.REACT_APP_BASE_URL}/check`, {
+				id: id,
+			});
 			console.log(resp.data.overlap);
 			setIdOverlap((p) => (p = resp.data.overlap));
 		} catch (err) {
@@ -156,9 +158,12 @@ function Signup() {
 
 	const checkNameOverlap = async () => {
 		try {
-			const req = await axios.post('http://localhost:8080/checkname', {
-				name: nickname,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/checkname`,
+				{
+					name: nickname,
+				}
+			);
 			console.log(req.data.overlap);
 			setNameOverlap((p) => (p = req.data.overlap));
 		} catch (err) {
@@ -190,10 +195,14 @@ function Signup() {
 			console.log(`id=${id}, password=${password}`);
 			try {
 				setPrevTwoClick((p) => (p = true));
-				const resp = await axios.post('http://localhost:8080/signup', {
-					id: id,
-					password: password,
-				});
+				const resp = await axios.post(
+					`${process.env.REACT_APP_BASE_URL}/signup`,
+					{
+						id: id,
+						password: password,
+						name: nickname,
+					}
+				);
 				setSignup((p) => (p = true));
 				console.log(resp);
 			} catch (error) {
@@ -219,7 +228,7 @@ function Signup() {
 			return;
 		}
 	};
-	console.log(idOverlap);
+	console.log('nickname' + nickname);
 	return (
 		<div>
 			<RegisterBackground />

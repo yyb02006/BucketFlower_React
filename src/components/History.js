@@ -67,9 +67,12 @@ function History({ userid }) {
 
 	const loadList = async () => {
 		try {
-			const req = await axios.post('http://localhost:8080/userList', {
-				id: userid,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/userList`,
+				{
+					id: userid,
+				}
+			);
 			setList((p) => (p = req.data));
 		} catch (error) {
 			console.log(error);

@@ -2,7 +2,7 @@ import axios from 'axios';
 axios.defaults.withCredentials = true;
 
 const axiosInstance = axios.create({
-	baseURL: 'http://localhost:3000/',
+	baseURL: `${process.env.REACT_APP_AXIOS_BASE_URL}`,
 });
 
 axiosInstance.interceptors.request.use(
@@ -18,7 +18,9 @@ axiosInstance.interceptors.response.use(
 	async (response) => {
 		if (response.data === 'Expired') {
 			const originalReq = response.config;
-			const refresh = await axios.get('http://localhost:8080/refreshtoken');
+			const refresh = await axios.get(
+				`${process.env.REACT_APP_BASE_URL}/refreshtoken`
+			);
 			console.log(refresh);
 			const originres = await axios.request(originalReq);
 			return originres;
@@ -28,7 +30,9 @@ axiosInstance.interceptors.response.use(
 	async (error) => {
 		const originalReq = error.config;
 		if (error.response.status === 401) {
-			const refresh = await axios.get('http://localhost:8080/refreshtoken');
+			const refresh = await axios.get(
+				`${process.env.REACT_APP_BASE_URL}/refreshtoken`
+			);
 			console.log(refresh);
 			const originres = await axios.request(originalReq);
 			return originres;

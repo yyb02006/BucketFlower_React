@@ -1,4 +1,3 @@
-import { isVisible } from '@testing-library/user-event/dist/utils';
 import axios from 'axios';
 import { useEffect } from 'react';
 import { useState } from 'react';
@@ -225,7 +224,9 @@ function SelectFlowerModal({ onModal, onCancel, userId, listId }) {
 
 	const loadRewards = async () => {
 		try {
-			const req = await axios.post('http://localhost:8080/loadRewards');
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/loadRewards`
+			);
 			const single = req.data.filter((arr) => arr.category === 'single');
 			const multiple = req.data.filter((arr) => arr.category === 'multiple');
 			const branch = req.data.filter((arr) => arr.category === 'branch');
@@ -290,18 +291,21 @@ function SelectFlowerModal({ onModal, onCancel, userId, listId }) {
 		basicHeight
 	) => {
 		try {
-			const req = await axios.post('http://localhost:8080/setreward', {
-				userid: userId,
-				rewards: file,
-				category: category,
-				theme: theme,
-				basicangle: basicAngle,
-				listid: listId,
-				basicleft: basicLeft,
-				basictop: basicTop,
-				basicwidth: basicWidth,
-				basicheight: basicHeight,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/setreward`,
+				{
+					userid: userId,
+					rewards: file,
+					category: category,
+					theme: theme,
+					basicangle: basicAngle,
+					listid: listId,
+					basicleft: basicLeft,
+					basictop: basicTop,
+					basicwidth: basicWidth,
+					basicheight: basicHeight,
+				}
+			);
 			onCancel();
 		} catch (error) {
 			console.log(error);
@@ -328,7 +332,7 @@ function SelectFlowerModal({ onModal, onCancel, userId, listId }) {
 								}
 							>
 								<img
-									src={`http://localhost:8080/images/${arr.filename}.png`}
+									src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.png`}
 									alt=''
 								/>
 							</BranchesWrapper>
@@ -381,7 +385,7 @@ function SelectFlowerModal({ onModal, onCancel, userId, listId }) {
 										}
 									>
 										<img
-											src={`http://localhost:8080/images/${arr.filename}.png`}
+											src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.png`}
 											alt=''
 										/>
 									</BranchesWrapper>
@@ -408,7 +412,7 @@ function SelectFlowerModal({ onModal, onCancel, userId, listId }) {
 										}
 									>
 										<img
-											src={`http://localhost:8080/images/${arr.filename}.png`}
+											src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.png`}
 											alt=''
 										/>
 									</BranchesWrapper>
@@ -438,7 +442,7 @@ function SelectFlowerModal({ onModal, onCancel, userId, listId }) {
 										}
 									>
 										<img
-											src={`http://localhost:8080/images/${arr.filename}.png`}
+											src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.png`}
 											alt=''
 										/>
 									</BranchesWrapper>
@@ -465,7 +469,7 @@ function SelectFlowerModal({ onModal, onCancel, userId, listId }) {
 										}
 									>
 										<img
-											src={`http://localhost:8080/images/${arr.filename}.png`}
+											src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.png`}
 											alt=''
 										/>
 									</BranchesWrapper>
@@ -495,7 +499,7 @@ function SelectFlowerModal({ onModal, onCancel, userId, listId }) {
 										}
 									>
 										<img
-											src={`http://localhost:8080/images/${arr.filename}.png`}
+											src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.png`}
 											alt=''
 										/>
 									</BranchesWrapper>
@@ -522,7 +526,7 @@ function SelectFlowerModal({ onModal, onCancel, userId, listId }) {
 										}
 									>
 										<img
-											src={`http://localhost:8080/images/${arr.filename}.png`}
+											src={`${process.env.REACT_APP_BASE_URL}/images/${arr.filename}.png`}
 											alt=''
 										/>
 									</BranchesWrapper>

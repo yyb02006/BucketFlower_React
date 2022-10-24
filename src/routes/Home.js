@@ -1,12 +1,14 @@
 import Header from '../components/Header';
 import Background from '../components/Background';
+import Footer from '../components/Footer';
 import styled, { keyframes, css } from 'styled-components';
 import { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosConfig';
 import lottie from 'lottie-web';
-import { ReactMediaRecorder } from 'react-media-recorder';
+import RM from '../assets/right_middle.png';
+import LB from '../assets/left_bottom.png';
 
 const MoveBox = keyframes`
 	0%{
@@ -23,6 +25,17 @@ const MoveCardD = (distance) =>
 	keyframes`
 	0%{
 		transform: translateY(${distance}px);
+	}
+	100%{
+		transform: translateY(0%);
+		opacity: 100%;
+	}
+`;
+
+const RiseUp = keyframes`
+0%{
+		transform: translateY(80px);
+		opacity: 0%;
 	}
 	100%{
 		transform: translateY(0%);
@@ -94,11 +107,121 @@ const IntroWrapper = styled.div`
 	}
 `;
 
-const IntroCard = styled.div``;
+const IntroCard = styled.div`
+	& > div:nth-child(1) {
+		height: 400px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	& > div:nth-child(1) > div {
+		width: 200px;
+		height: 100px;
+		background-color: #f05a1f;
+		border-radius: 50px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		color: #ffffff;
+		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+	}
+	& > div:nth-child(2) {
+		border-top: 2px solid #909090;
+		margin: 0 24px;
+	}
+	& > p {
+		font-size: 2rem;
+		font-weight: 400;
+		margin: 20px 24px;
+	}
+	span {
+		color: #32a797;
+		font-weight: 500;
+	}
+`;
+
+const PreviewWrapper = styled.div`
+	max-width: 1200px;
+	height: 900px;
+	padding-top: 400px;
+	margin: 0 auto;
+`;
+
+const PreviewContainer = styled.div`
+	height: 500px;
+	display: flex;
+	flex-wrap: wrap;
+	& > div:not(:nth-child(4n)) {
+		margin-right: 20px;
+	}
+	div {
+		margin-bottom: 20px;
+	}
+`;
+
+const PreviewInner = styled.div`
+	width: 280px;
+	height: 280px;
+	background-color: #fafafa;
+	border-radius: 20px;
+	filter: drop-shadow(0px 6px 10px rgba(0, 0, 0, 0.35));
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	${(props) =>
+		props.move
+			? css`
+					visibility: visible;
+					animation: ${RiseUp} 1s forwards;
+					animation-delay: calc(${props.delay} * 0.1s);
+					animation-fill-mode: backwards;
+			  `
+			: css`
+					visibility: hidden;
+			  `}
+	animation-timing-function: ease-in-out(0.42, 0, 0.58, 1);
+`;
+
+const PreviewText = styled.div`
+	margin: 0 auto;
+	width: 1200px;
+	display: flex;
+	justify-content: center;
+	font-size: 1.625rem;
+	font-weight: 400;
+	line-height: 2.75rem;
+	padding-top: 24px;
+	${(props) =>
+		props.move
+			? css`
+					animation: ${RiseUp} 1s forwards;
+					animation-delay: 1.3s;
+					animation-fill-mode: backwards;
+			  `
+			: null}
+	p {
+		margin: 0;
+	}
+	span {
+		color: #32a797;
+	}
+`;
 
 const LottieWrapper = styled.div`
 	position: absolute;
 	top: 100px;
+`;
+
+const RightMiddle = styled.img`
+	position: absolute;
+	top: 1300px;
+	right: -220px;
+`;
+
+const LeftBottom = styled.img`
+	position: absolute;
+	top: 2030px;
+	left: -90px;
 `;
 
 function Home() {
@@ -107,17 +230,43 @@ function Home() {
 	const [width, setWidth] = useState('');
 	const [innerWidth, setInnerWidth] = useState('');
 	const [isLogin, setIsLogin] = useState('');
-	const [testY, setTestY] = useState(0);
+	const [previews, setPreviews] = useState([]);
+	const [previewsMove, setPreviewsMove] = useState(false);
 	const VideoRef = useRef();
+	const likeDivIndex1 = useRef();
+	const likeDivIndex2 = useRef();
 	const move = useNavigate();
 
 	const auth = async () => {
 		try {
-			const req = await axiosInstance.get('http://localhost:8080/authtoken');
+			const req = await axiosInstance.get(
+				`${process.env.REACT_APP_BASE_URL}/authtoken`
+			);
 			setIsLogin((p) => (p = req.data.id));
 			console.log('First' + req.data.id);
 		} catch (error) {
 			console.log('auth' + error);
+		}
+	};
+
+	const loadPreviews = async () => {
+		try {
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/loadRewards`
+			);
+
+			let newarr = [];
+
+			while (newarr.length < 12 && req.data.length > 0) {
+				let modarr = req.data.splice(
+					Math.floor(Math.random() * req.data.length),
+					1
+				)[0];
+				newarr.push(modarr);
+			}
+			setPreviews((p) => (p = newarr));
+		} catch (error) {
+			console.log(error);
 		}
 	};
 
@@ -147,16 +296,23 @@ function Home() {
 		}
 	}, [offsetY]);
 
+	useEffect(() => {
+		if (offsetY >= 1300) {
+			setPreviewsMove((p) => (p = true));
+		}
+	}, [offsetY]);
+
 	useLayoutEffect(() => {
 		auth();
+		loadPreviews();
 		if (isLogin) {
 			move('userhome');
 		}
 	}, []);
-	// console.log(cardMove);
 
-	const likeDivIndex1 = useRef();
-	const likeDivIndex2 = useRef();
+	useEffect(() => {
+		console.log(previewsMove);
+	}, [previewsMove]);
 
 	useEffect(() => {
 		const ani = (el, json) =>
@@ -183,7 +339,7 @@ function Home() {
 	return (
 		<div>
 			<LottieWrapper ref={likeDivIndex1}></LottieWrapper>
-			<Background />
+			<Background height={3500} />
 			<Header />
 			<Main>
 				<MainVideo ref={VideoRef} width={width}></MainVideo>
@@ -193,11 +349,69 @@ function Home() {
 				</MainText>
 			</Main>
 			<IntroWrapper offsetY={offsetY} move={cardMove}>
-				<IntroCard />
-				<IntroCard />
-				<IntroCard>{offsetY}</IntroCard>
+				<IntroCard>
+					<div>
+						<div>MOTION IMAGE 1</div>
+					</div>
+					<div></div>
+					<p>
+						나만의
+						<br />
+						<span>버킷리스트</span>
+						를<br />
+						작성하고,
+					</p>
+				</IntroCard>
+				<IntroCard>
+					<div>
+						<div>MOTION IMAGE 2</div>
+					</div>
+					<div></div>
+					<p>
+						이루고싶은
+						<br />내 꿈들에
+						<br />
+						<span>도전</span>하고,
+					</p>
+				</IntroCard>
+				<IntroCard>
+					<div>
+						<div>MOTION IMAGE 3</div>
+					</div>
+					<div></div>
+					<p>
+						내 꿈을
+						<br />
+						이룰수록
+						<br />
+						<span>꽃</span>이자라고!
+					</p>
+				</IntroCard>
 			</IntroWrapper>
+			<PreviewWrapper>
+				<PreviewContainer>
+					{previews.map((preview, index) => (
+						<PreviewInner key={preview.id} move={previewsMove} delay={index}>
+							<img
+								src={`${process.env.REACT_APP_BASE_URL}/images/${preview.filename}.svg`}
+								alt=''
+							/>
+						</PreviewInner>
+					))}
+				</PreviewContainer>
+			</PreviewWrapper>
+			<PreviewText move={previewsMove}>
+				<p>
+					<span>버킷플라워</span>는 여러분이 버킷리스트를 이루어 가는 과정을
+					통해 자라납니다.
+					<br />
+					평소에 하고싶었던 것을 하나씩 달성하며 나만의 버킷플라워를 키워보세요!
+				</p>
+			</PreviewText>
+			<Footer margin={350}></Footer>
 			<LottieWrapper ref={likeDivIndex2}></LottieWrapper>
+			<RightMiddle src={RM} alt=''></RightMiddle>
+			<LeftBottom src={LB} alt=''></LeftBottom>
 		</div>
 	);
 }

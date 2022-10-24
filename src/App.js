@@ -13,7 +13,9 @@ function App() {
 	const [isLogin, setIsLogin] = useState('');
 	const test = async () => {
 		try {
-			const req = await axiosInstance.get('http://localhost:8080/authtoken');
+			const req = await axiosInstance.get(
+				`${process.env.REACT_APP_BASE_URL}/authtoken`
+			);
 			setIsLogin(req.data.id);
 			// console.log('First' + req.data.id);
 		} catch (error) {

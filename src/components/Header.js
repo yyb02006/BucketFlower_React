@@ -213,7 +213,9 @@ function Header() {
 
 	const auth = async () => {
 		try {
-			const req = await axiosInstance.get('http://localhost:8080/authtoken');
+			const req = await axiosInstance.get(
+				`${process.env.REACT_APP_BASE_URL}/authtoken`
+			);
 			// console.log(req.data.id);
 			setIsUser((p) => (p = req.data.id));
 		} catch (error) {
@@ -223,9 +225,12 @@ function Header() {
 
 	const selectUsers = async () => {
 		try {
-			const req = await axiosInstance.post('http://localhost:8080/users', {
-				userid: isUser,
-			});
+			const req = await axiosInstance.post(
+				`${process.env.REACT_APP_BASE_URL}/users`,
+				{
+					userid: isUser,
+				}
+			);
 			setUserProfileImage((p) => (p = req.data[0].userimage));
 			setUserName((p) => (p = req.data[0].usernickname));
 		} catch (error) {
@@ -235,9 +240,12 @@ function Header() {
 
 	const selectList = async () => {
 		try {
-			const req = await axios.post('http://localhost:8080/userList', {
-				id: isUser,
-			});
+			const req = await axios.post(
+				`${process.env.REACT_APP_BASE_URL}/userList`,
+				{
+					id: isUser,
+				}
+			);
 			setListTotal((p) => (p = req.data.length));
 			setUserList((p) => (p = req.data));
 			setListCompleted(
@@ -271,7 +279,7 @@ function Header() {
 
 	const logout = async () => {
 		try {
-			const req = await axios.get('http://localhost:8080/logout');
+			const req = await axios.get(`${process.env.REACT_APP_BASE_URL}/logout`);
 			move('/');
 		} catch (error) {
 			console.log(error);
@@ -305,7 +313,7 @@ function Header() {
 				{location.pathname !== '/' ? (
 					isUser ? (
 						<GreetBox>
-							<Greet>{isUser}님 반가워요!</Greet>
+							<Greet>{userName}님 반가워요!</Greet>
 							<MyFlowerLink>나의 버킷플라워 보러 가기</MyFlowerLink>
 						</GreetBox>
 					) : null
@@ -323,7 +331,7 @@ function Header() {
 									userProfileImage
 										? userProfileImage === 'person96'
 											? person48
-											: `http://localhost:8080/${isUser}/profile/${userProfileImage}`
+											: `${process.env.REACT_APP_BASE_URL}/${isUser}/profile/${userProfileImage}`
 										: null
 								}
 								alt=''
@@ -336,7 +344,7 @@ function Header() {
 												userProfileImage
 													? userProfileImage === 'person96'
 														? person96
-														: `http://localhost:8080/${isUser}/profile/${userProfileImage}`
+														: `${process.env.REACT_APP_BASE_URL}/${isUser}/profile/${userProfileImage}`
 													: null
 											}
 											alt=''
@@ -346,7 +354,7 @@ function Header() {
 										<div>
 											<Progress>
 												<div>진행 중</div>
-												<div>{listTotal}</div>
+												<div>{listTotal - listCompleted.length}</div>
 											</Progress>
 											<Completed>
 												<div>완료</div>
